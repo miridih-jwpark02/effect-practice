@@ -1,5 +1,6 @@
 // SVG 요소 타입
 export type EF_SVGElementType =
+  | "svg"
   | "rect"
   | "circle"
   | "path"

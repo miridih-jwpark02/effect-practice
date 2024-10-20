@@ -7,4 +7,3 @@ export const SVGEngineProvider = Layer.succeed(
   SVGEngine,
   SVGEngineImplementation
 )
-
