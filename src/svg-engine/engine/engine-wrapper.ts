@@ -92,6 +92,10 @@ class SVGEngineWrapper {
     return this;
   }
 
+  extendsEffect(effect: Effect.Effect<EF_SVGElement, Error, Environment | SVGEngine>): SVGEngineWrapper {
+    this.effect = this.effect.pipe(Effect.andThen(effect))
+    return this;
+  }
   
 
   toEffect(): Effect.Effect<EF_SVGElement, Error, Environment | SVGEngine> {
