@@ -1,5 +1,5 @@
-import { Effect, Console } from "effect"
+import { Effect as _ } from "effect"
 
 import { runnable } from "./program"
 
-Effect.runPromise(runnable)
+_.runPromise(runnable)

@@ -1,4 +1,4 @@
-import { Effect, Layer, pipe } from "effect"
+import { Effect as _, Layer, pipe } from "effect"
 import { Environment } from "./environment"
 import { EF_DOMParser } from "../core/types"
 
@@ -7,9 +7,9 @@ export const NodeEnvironmentProvider = Layer.succeed(
   Environment,
   {
     domParser: pipe(
-      Effect.tryPromise(() => import('jsdom').then(({ JSDOM }) => new JSDOM())),
-      Effect.map((jsdom) => new jsdom.window.DOMParser() as EF_DOMParser),
-      Effect.catchAll(() => Effect.fail(new Error('Failed to create DOMParser')))
+      _.tryPromise(() => import('jsdom').then(({ JSDOM }) => new JSDOM())),
+      _.map((jsdom) => new jsdom.window.DOMParser() as EF_DOMParser),
+      _.catchAll(() => _.fail(new Error('Failed to create DOMParser')))
     )
   }
 )
@@ -18,7 +18,7 @@ export const NodeEnvironmentProvider = Layer.succeed(
 export const BrowserEnvironmentProvider = Layer.succeed(
   Environment,
   {
-    domParser: Effect.succeed(new DOMParser() as EF_DOMParser)
+    domParser: _.suspend(() => _.succeed(new DOMParser() as EF_DOMParser))
   }
 )
 

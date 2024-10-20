@@ -1,5 +1,10 @@
 // SVG 요소 타입
-export type EF_SVGElementType = "rect" | "circle" | "path" | "text" | "g"
+export type EF_SVGElementType =
+  | "rect"
+  | "circle"
+  | "path"
+  | "text"
+  | "g"
 
 // SVG 요소 속성
 export type EF_SVGAttributes = Record<string, string | number>
