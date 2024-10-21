@@ -1,48 +1,56 @@
-import { Context, pipe } from 'effect';
-import * as _ from 'effect/Effect';
-import { Environment } from '../environment/environment';
-import { SVGEngine } from './engine';
-import { renderToString, xmlToEF_SVGElement } from '../core/utils';
+import { Context, Effect, pipe } from "effect";
+import { Environment } from "../environment/environment";
+import { SVGEngine } from "./engine";
+import {
+  efSVGElementToXML,
+  renderToString,
+  xmlToEF_SVGElement,
+} from "../core/utils";
 
 // SVG Engine 구현
 export const SVGEngineImplementation: Context.Tag.Service<SVGEngine> = {
   createElement: (type, attributes) =>
-    _.succeed({ type, attributes, children: [] }),
+    Effect.succeed({ type, attributes, children: [] }),
 
-  render: (element) => _.try({
-    try: () => renderToString(element),
-    catch: () => new Error('Failed to render SVGElement')
-  }),
+  render: (element) =>
+    Effect.try({
+      try: () => renderToString(element),
+      catch: () => new Error("Failed to render SVGElement"),
+    }),
 
   importSVG: (svgString) =>
     pipe(
       Environment,
-      _.flatMap((env) => env.domParser),
-      _.map((domParser) => domParser.parseFromString(svgString, 'text/xml')),
-      _.map((xmlDoc) => xmlToEF_SVGElement(xmlDoc.documentElement)),
-      _.catchAll(() => _.fail(new Error('Failed to convert XML to SVGElement')))
+      Effect.flatMap((env) => env.domParser),
+      Effect.map((domParser) =>
+        domParser.parseFromString(svgString, "text/xml")
+      ),
+      Effect.map((xmlDoc) => xmlToEF_SVGElement(xmlDoc.documentElement)),
+      Effect.catchAll(() =>
+        Effect.fail(new Error("Failed to convert XML to SVGElement"))
+      )
     ),
 
-  getType: (element) => _.succeed(element.type),
+  getType: (element) => Effect.succeed(element.type),
 
-  getAttributes: (element) => _.succeed(element.attributes),
+  getAttributes: (element) => Effect.succeed(element.attributes),
 
-  getChildren: (element) => _.succeed(element.children),
+  getChildren: (element) => Effect.succeed(element.children),
 
   setAttributes: (element, attributes) =>
-    _.succeed({
+    Effect.succeed({
       ...element,
       attributes: { ...element.attributes, ...attributes },
     }),
 
   appendChild: (element, child) =>
-    _.succeed({
+    Effect.succeed({
       ...element,
       children: [...element.children, child],
     }),
 
   applyTransform: (element, transform) =>
-    _.succeed({
+    Effect.succeed({
       ...element,
       attributes: {
         ...element.attributes,
@@ -53,7 +61,7 @@ export const SVGEngineImplementation: Context.Tag.Service<SVGEngine> = {
     }),
 
   setStyle: (element, style) =>
-    _.succeed({
+    Effect.succeed({
       ...element,
       attributes: {
         ...element.attributes,
@@ -62,4 +70,15 @@ export const SVGEngineImplementation: Context.Tag.Service<SVGEngine> = {
           : style,
       },
     }),
+
+  select: (element, selector) =>
+    pipe(
+      Environment,
+      Effect.flatMap((env) => env.document),
+      Effect.map((document) => efSVGElementToXML(element, document)),
+      Effect.map((element) => element.querySelectorAll(selector)),
+      Effect.map((nodes) =>
+        Array.from(nodes).map((node) => xmlToEF_SVGElement(node as Element))
+      )
+    ),
 };

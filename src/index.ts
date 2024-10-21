@@ -1,12 +1,10 @@
-import { Effect as _ } from "effect"
+import { Effect } from "effect";
 
-import { runnable } from "./program"
+import { runnable } from "./program";
 
-_.runPromise(runnable)
+Effect.runPromise(runnable);
 
 // usage
-
-
 
 // const commands = [
 //   scale(2),
@@ -46,7 +44,6 @@ _.runPromise(runnable)
 // const translate = (x: number, y: number) => (element: EF_SVGElement) => {
 //   return translate(x, y)(element)
 // }
-
 
 // {
 //   const svg = importSVG(svgString)
