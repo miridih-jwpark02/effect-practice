@@ -4,10 +4,46 @@
     <meta charset="UTF-8" />
     <title>title</title>
     <script type="module" src="./src/index.ts"></script>
+    <style>
+        body {
+            background-color: #555;
+            color: #fff;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr 50px;
+            gap: 10px;
+            /* width: 300px; */
+        }
+        .controls-grid label:first-of-type {
+            grid-column: 1;
+        }
+        .controls-grid input {
+            grid-column: 2;
+        }
+        .controls-grid label:last-of-type {
+            grid-column: 3;
+        }
+        #result > svg {
+            transform: scale(0.5);
+            transform-origin: top left;
+        }
+    </style>
 </head>
 <body>
-  <input id="range" type="range" min="0" max="100" value="0" />
-  <label id="label">0</label>
-  <div id="result"></div>
+    <div id="container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+        <div id="result" style="width: 300px; height: 300px;"></div>
+        <div style="position: fixed; top: 0; right: 0; display: flex; flex-direction: column; align-items: end; justify-content: center; gap: 10px; box-sizing: border-box;">
+            <div id="controls" class="controls-grid" style="padding: 10px; box-sizing: border-box;">
+                <label for="range-scale">Scale</label>
+                <input id="range-scale" type="range" min="50" max="300" value="50" />
+                <label id="label-scale">50</label>
+        
+                <label for="range-roundness">Roundness</label>
+                <input id="range-roundness" type="range" min="0" max="100" value="50" />
+                <label id="label-roundness">50</label>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

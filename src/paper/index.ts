@@ -5,7 +5,9 @@ namespace Paper {
   export class PaperScope extends paper.PaperScope {}
   export class Color extends paper.Color {}
   export class Item extends paper.Item {}
+  export class PathItem extends paper.PathItem {}
   export class Path extends paper.Path {}
+  export class Curve extends paper.Curve {}
   export class Shape extends paper.Shape {}
   export class Group extends paper.Group {}
   export class CompoundPath extends paper.CompoundPath {}

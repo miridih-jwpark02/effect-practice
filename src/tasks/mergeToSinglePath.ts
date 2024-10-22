@@ -17,22 +17,9 @@ const _mergeToSinglePath: ProcessTask<Paper.Item, Paper.Item> = (
     // 작업 수행
 
     // item 내부의 모든 패스를 하나의 패스로 병합
-
-    const findPathRecursive = (item: Paper.Item) => {
-      if (!item.children) return [];
-      const paths: Paper.Path[] = [];
-      item.children.forEach((child) => {
-        if (child instanceof paper.Path) {
-          paths.push(child);
-        }
-        if (child instanceof paper.Item) {
-          paths.push(...findPathRecursive(child));
-        }
-      });
-      return paths;
-    };
-
-    const targetPaths = findPathRecursive(item);
+    const targetPaths = item.getItems({
+      class: paper.Path,
+    }) as Paper.Path[];
 
     const newPath = targetPaths.reduce((acc, path) => {
       return new paper.Path(acc.unite(path).pathData);

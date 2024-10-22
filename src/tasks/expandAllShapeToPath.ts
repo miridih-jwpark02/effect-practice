@@ -17,23 +17,10 @@ const _expandAllShapeToPath: ProcessTask<Paper.Item, Paper.Item> = (
     // 작업 수행
 
     // item 내부의 모든 Shape를 Path로 변환
-    console.log(item.children);
-
-    const findShapeRecursive = (item: Paper.Item) => {
-      if (!item.children) return [];
-      const shapes: Paper.Shape[] = [];
-      item.children.forEach((child) => {
-        if (child instanceof paper.Shape) {
-          shapes.push(child);
-        }
-        if (child instanceof paper.Item) {
-          shapes.push(...findShapeRecursive(child));
-        }
-      });
-      return shapes;
-    };
-
-    const targetShapes = findShapeRecursive(item);
+    const targetShapes = item.getItems({
+      recursive: true,
+      class: paper.Shape,
+    }) as Paper.Shape[];
 
     const convertedPaths: Paper.Path[] = targetShapes.map(
       (shape) => shape.toPath(false) // no insert to active layer
