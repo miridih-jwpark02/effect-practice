@@ -6,6 +6,7 @@ namespace Paper {
   export class Color extends paper.Color {}
   export class Item extends paper.Item {}
   export class Path extends paper.Path {}
+  export class Shape extends paper.Shape {}
   export class Group extends paper.Group {}
   export class CompoundPath extends paper.CompoundPath {}
   export class Size extends paper.Size {}
@@ -15,4 +16,4 @@ namespace Paper {
   export class Layer extends paper.Layer {}
 }
 
-export { Paper };
+export type { Paper };

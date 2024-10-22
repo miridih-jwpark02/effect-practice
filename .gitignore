@@ -4,3 +4,7 @@
 /coverage
 /logs
 /effect
+# Parcel 관련 파일 및 디렉토리
+/.parcel-cache
+/dist
+/.cache

@@ -33,6 +33,7 @@ export const BrowserEnvironmentProvider = Layer.succeed(Environment, {
     Effect.tryPromise(() =>
       import("paper/dist/paper-core").then(({ PaperScope }) => new PaperScope())
     ),
+    Effect.tap(() => console.log("loaded paper")),
     Effect.catchAll(() => Effect.fail(new Error("Failed to create paper")))
   ),
 });
