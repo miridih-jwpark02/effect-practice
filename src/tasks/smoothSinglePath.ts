@@ -1,18 +1,18 @@
-const DEBUG = false;
+const DEBUG = true;
 
-import { Effect, Console } from "effect";
+import { Effect, Console, Either } from "effect";
 import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
 import {
-  isSinglePath,
   getMidLinearIndexes,
   getSplitCurves,
   getMinLengthFromCurves,
-  circularForEach,
   getBetweenAngle,
-  circularModulo,
-} from "./utils";
+} from "./utils/geometry";
+import { circularForEach, circularModulo } from "./utils/iterate";
+
+import { isSinglePath } from "./utils/guard";
 
 /**
  * 단일 path를 부드럽게 만드는 함수
@@ -47,20 +47,20 @@ export const smoothSinglePath: (
     const pathStyle = path.style;
 
     // path.curves에 대해 midlinear indexes
-    const midLinearIndexes = getMidLinearIndexes(path.curves);
+    const midLinearIndexes = yield* getMidLinearIndexes(path.curves);
 
     yield* Console.log("midLinearIndexes", midLinearIndexes);
 
     // midlinear indexes에 대해 2개로 split
-    const midLinearSegmentedPathCurves: Paper.Curve[] = path.curves
-      .map((curve, index) => {
+    const midLinearSegmentedPathCurves: Paper.Curve[] = (yield* Effect.all(
+      path.curves.map((curve, index) => {
         if (midLinearIndexes.includes(index)) {
           return getSplitCurves(curve, 2, { toLinear: true });
         } else {
-          return [curve];
+          return Effect.succeed([curve]);
         }
       })
-      .flat();
+    )).flat();
 
     yield* Console.log("path curves length", path.curves.length);
     yield* Console.log(
@@ -69,9 +69,12 @@ export const smoothSinglePath: (
     );
 
     // 최소 길이 계산
-    const minLength = getMinLengthFromCurves(midLinearSegmentedPathCurves, {
-      onlyLinear: true,
-    });
+    const minLength = yield* getMinLengthFromCurves(
+      midLinearSegmentedPathCurves,
+      {
+        onlyLinear: true,
+      }
+    );
 
     // midlinear indexes 계산: for segmented path curves
     const segmentedPathCurvesMidLinearIndexes = getMidLinearIndexes(
@@ -82,24 +85,29 @@ export const smoothSinglePath: (
     const angleIndexes: number[] = [];
     const angles: number[] = [];
 
-    circularForEach(
+    yield* circularForEach(
       midLinearSegmentedPathCurves,
-      (curvesWindow, index) => {
-        const angle = getBetweenAngle(curvesWindow[0], curvesWindow[1]);
-        if (angle instanceof Error) {
-          return;
-        }
-        const moduloAngle = circularModulo(angle, 360);
-        if (
-          [0, 180, 360].some((value) => Math.abs(moduloAngle - value) < 0.001)
-        ) {
-          return;
-        }
-        angleIndexes.push(
-          circularModulo(index + 1, midLinearSegmentedPathCurves.length)
-        );
-        angles.push(circularModulo(angle, 360));
-      },
+      (curvesWindow, index) =>
+        Effect.gen(function* (_) {
+          const angleResult = yield* Effect.either(
+            getBetweenAngle(curvesWindow[0], curvesWindow[1])
+          );
+
+          if (Either.isLeft(angleResult)) {
+            return Effect.yieldNow();
+          }
+          const angle = Either.getOrThrow(angleResult);
+          const moduloAngle = circularModulo(angle, 360);
+          if (
+            [0, 180, 360].some((value) => Math.abs(moduloAngle - value) < 0.001)
+          ) {
+            return Effect.yieldNow();
+          }
+          angleIndexes.push(
+            circularModulo(index + 1, midLinearSegmentedPathCurves.length)
+          );
+          angles.push(circularModulo(angle, 360));
+        }),
       2
     );
 
@@ -316,7 +324,9 @@ export const smoothSinglePath: (
     path.remove();
 
     // 결과 path 추가
-    item.addChildren([resultPath]);
+    if (!DEBUG) {
+      item.addChildren([resultPath]);
+    }
 
     // 프로젝트 제거
     paper.project.remove();

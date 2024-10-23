@@ -1,4 +1,4 @@
-import { Effect, pipe } from "effect";
+import { Console, Effect, pipe } from "effect";
 import { importSVGToPaperItem } from "./tasks/importSVGToPaperItem";
 import { exportPaperItemToSVGElement } from "./tasks/exportPaperItemToSVG";
 import { scalePaperItem } from "./tasks/scalePaperItem";
@@ -37,22 +37,46 @@ export const createSvgProcessProgram = ({
 }: SVGOpts) =>
   Effect.gen(function* () {
     // SVG string을 Paper.js item으로 import
+
+    const start = performance.now();
+
     const item = yield* importSVGToPaperItem(mockSVGString);
 
+    const end = performance.now();
+    yield* Console.log(`importSVGToPaperItem: ${end - start}ms`);
+
     // 모든 shape를 path로 확장
+    const start2 = performance.now();
     const expanded = yield* expandAllShapeToPath(item);
+    const end2 = performance.now();
+    yield* Console.log(`expandAllShapeToPath: ${end2 - start2}ms`);
 
     // 단일 path로 병합
+    const start3 = performance.now();
     const merged = yield* mergeToSinglePath(expanded);
+    const end3 = performance.now();
+    yield* Console.log(`mergeToSinglePath: ${end3 - start3}ms`);
 
     // Path 부드럽게 처리
+    const start4 = performance.now();
     const smoothed = yield* smoothSinglePath(roundness)(merged);
+    const end4 = performance.now();
+    yield* Console.log(`smoothSinglePath: ${end4 - start4}ms`);
 
     // Path 크기 조정
+    const start5 = performance.now();
     const scaled = yield* scalePaperItem(scale)(smoothed);
+    const end5 = performance.now();
+    yield* Console.log(`scalePaperItem: ${end5 - start5}ms`);
 
     // Paper.js item을 SVG element로 export
+    const start6 = performance.now();
     const svg = yield* exportPaperItemToSVGElement(scaled);
+    const end6 = performance.now();
+    yield* Console.log(`exportPaperItemToSVGElement: ${end6 - start6}ms`);
+
+    const total = performance.now();
+    yield* Console.log(`total: ${total - start}ms`);
 
     return svg;
   });
