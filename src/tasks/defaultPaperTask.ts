@@ -4,7 +4,9 @@ import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
 import { provideDependencies } from "../provideDependencies";
 
-const _defaultPaperTask: (params: any) => ProcessTask<Paper.Item, Paper.Item> =
+export const defaultPaperTask: (
+  params: any
+) => ProcessTask<Paper.Item, Paper.Item> =
   (params: any) => (item: Paper.Item) =>
     Effect.gen(function* () {
       // 의존성 로드
@@ -23,6 +25,3 @@ const _defaultPaperTask: (params: any) => ProcessTask<Paper.Item, Paper.Item> =
       // 반환
       return item;
     });
-
-export const defaultPaperTask = (params: any) =>
-  provideDependencies(_defaultPaperTask(params));

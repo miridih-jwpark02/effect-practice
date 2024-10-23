@@ -2,11 +2,11 @@ import { Effect } from "effect";
 import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
-import { provideDependencies } from "../provideDependencies";
 
-const _exportPaperItemToSVGElement: ProcessTask<Paper.Item, SVGElement> = (
-  item: Paper.Item
-) =>
+export const exportPaperItemToSVGElement: ProcessTask<
+  Paper.Item,
+  SVGElement
+> = (item: Paper.Item) =>
   Effect.gen(function* () {
     // 의존성 로드
     const paperEngine = yield* PaperEngine;
@@ -32,7 +32,3 @@ const _exportPaperItemToSVGElement: ProcessTask<Paper.Item, SVGElement> = (
     // 반환
     return exportedSVG;
   });
-
-export const exportPaperItemToSVGElement = provideDependencies(
-  _exportPaperItemToSVGElement
-);

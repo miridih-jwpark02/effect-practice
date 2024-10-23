@@ -1,164 +1,25 @@
-import { Effect } from "effect";
+const DEBUG = false;
+
+import { Effect, Console } from "effect";
 import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
-import { provideDependencies } from "../provideDependencies";
-
-type AngleCurvePair = {
-  angle: number;
-  curve1: Paper.Curve;
-  curve2: Paper.Curve;
-};
-
-// path 개수 검증
-const isSinglePath = (paths: Paper.Path[]) =>
-  paths.length === 0
-    ? Effect.fail(new Error("No path to smooth"))
-    : paths.length > 1
-    ? Effect.fail(new Error("Multiple paths found"))
-    : Effect.succeed(true);
+import {
+  isSinglePath,
+  getMidLinearIndexes,
+  getSplitCurves,
+  getMinLengthFromCurves,
+  circularForEach,
+  getBetweenAngle,
+  circularModulo,
+} from "./utils";
 
 /**
- * 최소 길이를 반환하는 함수
- * @param curves - 길이를 비교할 curve들
- * @param options - 옵션
- * @returns 최소 길이
+ * 단일 path를 부드럽게 만드는 함수
+ * @param roundness - 둥근 정도 (0 ~ 100)
+ * @returns 부드러운 path
  */
-const getMinLengthFromCurves = (
-  curves: Paper.Curve[],
-  options: {
-    /** linear한 curve만 고려할지 여부 */
-    onlyLinear?: boolean;
-  } = {}
-) => {
-  return curves.reduce((minLength, curve) => {
-    if (options.onlyLinear && curve.hasHandles()) {
-      return minLength;
-    }
-    return Math.min(minLength, curve.length);
-  }, Infinity);
-};
-
-/**
- * 주어진 curve를 주어진 개수만큼 분할하는 함수
- * @param curve - 분할할 curve
- * @param splitCount - 분할할 개수
- * @param options - 옵션
- * @returns 분할된 curve들
- */
-const getSplitCurves = (
-  curve: Paper.Curve,
-  splitCount: number,
-  options?: {
-    /** 선형으로 변환할지 여부 */
-    toLinear?: boolean;
-  }
-) => {
-  const result: Paper.Curve[] = Array.from({ length: splitCount }).map(
-    (_, index) => {
-      const splittedCurve = curve.getPart(
-        index / splitCount,
-        (index + 1) / splitCount
-      );
-      if (options?.toLinear) {
-        splittedCurve.clearHandles();
-      }
-      return splittedCurve;
-    }
-  );
-  return result;
-};
-
-/**
- * 순환 모듈로 연산을 수행하는 함수
- * @param index - 연산할 인덱스
- * @param length - 모듈로 연산할 길이
- * @returns 연산 결과
- */
-const circularModulo = (index: number, length: number) =>
-  (index + length) % length;
-
-/**
- * 배열의 요소들을 순환하면서 callback을 실행하는 함수
- * @param array - 순환할 배열
- * @param callback - 각 요소에 대해 실행할 callback 함수
- * @param windowSize - 한 번에 처리할 요소의 개수 (기본값: 1)
- */
-const circularForEach = <T>(
-  array: T[],
-  callback: (items: T[], index: number) => void,
-  windowSize: number = 1
-): void => {
-  if (array.length === 0 || windowSize <= 0) {
-    return;
-  }
-
-  for (let i = 0; i < array.length; i++) {
-    const window: T[] = [];
-    for (let j = 0; j < windowSize; j++) {
-      const index = circularModulo(i + j, array.length);
-      window.push(array[index]);
-    }
-    callback(window, i);
-  }
-};
-
-/**
- * 선형 curve의 각도를 반환하는 함수
- * @param curve - 각도를 반환할 curve
- * @returns 각도
- */
-const getAngleFromLinearCurve = (curve: Paper.Curve) => {
-  const directionVector = curve.segment2.point.subtract(curve.segment1.point);
-  return (directionVector.angle + 360) % 360;
-};
-
-// mid linear: 양쪽 curve가 모두 linear이고 자기 자신도 linear인 경우
-const getMidLinearIndexes = (curves: Paper.Curve[]) => {
-  const isMidLinear = (
-    prev: Paper.Curve,
-    curr: Paper.Curve,
-    next: Paper.Curve
-  ) => {
-    if (prev.hasHandles() || curr.hasHandles() || next.hasHandles()) {
-      return false;
-    }
-
-    return true;
-  };
-
-  const midLinearIndexes: number[] = [];
-
-  circularForEach(
-    curves,
-    (curvesWindow, index) => {
-      if (isMidLinear(curvesWindow[0], curvesWindow[1], curvesWindow[2])) {
-        midLinearIndexes.push((index + 1) % curves.length);
-      }
-    },
-    3
-  );
-
-  return midLinearIndexes;
-};
-
-/**
- * 두 curve 사이의 각도를 반환하는 함수
- * @param curve1 - 첫 번째 curve
- * @param curve2 - 두 번째 curve
- * @returns 각도 (1번 커브에서 2번 커브로 반시계가 +)
- */
-const getBetweenAngle = (curve1: Paper.Curve, curve2: Paper.Curve) => {
-  if (curve1.hasHandles() || curve2.hasHandles()) {
-    console.log("curve has handles");
-    return new Error("Curve has handles");
-  }
-  const directionVector1 = getAngleFromLinearCurve(curve1);
-  const directionVector2 = getAngleFromLinearCurve(curve2);
-  return directionVector2 - directionVector1;
-};
-
-const _smoothSinglePath: (
+export const smoothSinglePath: (
   roundness: number
 ) => ProcessTask<Paper.Item, Paper.Item> = (roundness) => (item: Paper.Item) =>
   Effect.gen(function* () {
@@ -167,6 +28,9 @@ const _smoothSinglePath: (
 
     // 환경 설정
     const paper = yield* paperEngine.setup(100, 100);
+
+    // 디버깅용 변수
+    let debugPaths: Paper.Path[] = [];
 
     // 작업 수행
     const paths = item.getItems({
@@ -179,10 +43,13 @@ const _smoothSinglePath: (
     // alias for convenience
     const path = paths[0];
 
+    // save path style
+    const pathStyle = path.style;
+
     // path.curves에 대해 midlinear indexes
     const midLinearIndexes = getMidLinearIndexes(path.curves);
 
-    console.log("midLinearIndexes", midLinearIndexes);
+    yield* Console.log("midLinearIndexes", midLinearIndexes);
 
     // midlinear indexes에 대해 2개로 split
     const midLinearSegmentedPathCurves: Paper.Curve[] = path.curves
@@ -195,8 +62,8 @@ const _smoothSinglePath: (
       })
       .flat();
 
-    console.log("path curves length", path.curves.length);
-    console.log(
+    yield* Console.log("path curves length", path.curves.length);
+    yield* Console.log(
       "midLinearSegmentedPathCurves length",
       midLinearSegmentedPathCurves.length
     );
@@ -228,16 +95,18 @@ const _smoothSinglePath: (
         ) {
           return;
         }
-        angleIndexes.push(index + 1);
+        angleIndexes.push(
+          circularModulo(index + 1, midLinearSegmentedPathCurves.length)
+        );
         angles.push(circularModulo(angle, 360));
       },
       2
     );
 
-    console.log("angleIndexes", angleIndexes);
-    console.log("angles", angles);
+    yield* Console.log("angleIndexes", angleIndexes);
+    yield* Console.log("angles", angles);
 
-    console.log(
+    yield* Console.log(
       "segmentedPathCurvesMidLinearIndexes",
       segmentedPathCurvesMidLinearIndexes
     );
@@ -245,7 +114,7 @@ const _smoothSinglePath: (
     // 실제로 변화시킬 길이
     const referenceLength = (minLength * roundness) / 100;
 
-    const newCurves: Paper.Curve[] = [];
+    const flatCurves: Paper.Curve[] = [];
 
     const getOffsetCurve = (
       curve: Paper.Curve,
@@ -282,14 +151,13 @@ const _smoothSinglePath: (
       );
 
       if (angleIndexes.includes(prevIndex)) {
-        console.log("prevIndex:", prevIndex);
         // path의 진행 방향 중 커브 직후 각도가 있는 경우
         const partCurve = getOffsetCurve(
           _curve,
           _curve.length - referenceLength,
           "end"
         );
-        newCurves.push(partCurve);
+        flatCurves.push(partCurve);
       } else if (angleIndexes.includes(currentIndex)) {
         // path의 진행 방향 중 커브 직전 각도가 있는 경우
         const partCurve = getOffsetCurve(
@@ -297,19 +165,17 @@ const _smoothSinglePath: (
           _curve.length - referenceLength,
           "start"
         );
-        newCurves.push(partCurve);
+        flatCurves.push(partCurve);
       } else {
-        console.log("else:", index);
-        newCurves.push(_curve);
+        flatCurves.push(_curve);
       }
     });
 
-    const arcCurves: Paper.Curve[] = [];
-
     const debugNewPoints: Paper.Point[] = [];
 
-    // 각도계산. 본래 변수를 사용하려면 clone을 해야 하나 메모리 관리를 위해 그냥 레퍼런스를 이어가면서 사용
-    angleIndexes.forEach((angleIndex) => {
+    // arc curve 계산.
+
+    const createArc = (angleIndex) => {
       const vector1Index =
         (angleIndex - 1 + midLinearSegmentedPathCurves.length) %
         midLinearSegmentedPathCurves.length;
@@ -343,53 +209,64 @@ const _smoothSinglePath: (
 
       debugNewPoints.push(arcThrough);
 
-      console.log(
-        "direnctionVector",
-        angleIndex,
-        direnctionVector.length,
-        vector1.angle,
-        vector2.angle,
-        direnctionVector.angle
-      );
-
       const arcFrom = primaryPoint.add(vector1.multiply(-referenceLength));
       const arcTo = primaryPoint.add(vector2.multiply(referenceLength));
 
-      const newArc = new paper.Path.Arc(arcFrom, arcThrough, arcTo);
-      newArc.curves.forEach((curve) => {
-        arcCurves.push(curve);
-      });
-    });
-    console.log("referenceLength", referenceLength);
+      const resultArc = new paper.Path.Arc(arcFrom, arcThrough, arcTo);
 
-    {
+      return resultArc;
+    };
+
+    // 여기서만 사용할 타입
+    type ResultPath = {
+      path: Paper.Path;
+      index: number;
+    };
+
+    const resultArcs: ResultPath[] = angleIndexes.map((angleIndex) => ({
+      path: createArc(angleIndex),
+      index: angleIndex,
+    }));
+
+    const resultFlats: ResultPath[] = flatCurves.map((curve, index) => ({
+      path: new paper.Path([curve.segment1, curve.segment2]),
+      index,
+    }));
+
+    const unitedPath = [...resultArcs, ...resultFlats]
+      .sort((a, b) => a.index - b.index)
+      .map((path) => path.path)
+      .reduce((acc, path) => {
+        acc.join(path);
+        return acc;
+      }, new paper.Path());
+
+    const resultPath = unitedPath;
+    resultPath.style = pathStyle;
+
+    if (DEBUG) {
       /** DEBUG SCOPE */
 
-      let debugPaths: Paper.Path[] = [];
+      path.remove();
 
       // paths의 path에 속한 각 segment에 대해 새로운 path 생성
 
       const DEBUG_LINE_WIDTH_1 = 10;
       const DEBUG_LINE_WIDTH_2 = 3;
 
-      newCurves.forEach((curve, index) => {
+      flatCurves.forEach((curve, index) => {
         if (curve.hasHandles()) {
           const newPath = new paper.Path([curve.segment1, curve.segment2]);
           newPath.style.strokeColor = new paper.Color("#FF0000");
-          if (index % 2 === 0) {
-            newPath.style.strokeWidth = DEBUG_LINE_WIDTH_1;
-          } else {
-            newPath.style.strokeWidth = DEBUG_LINE_WIDTH_2;
-          }
+
+          newPath.style.strokeWidth = DEBUG_LINE_WIDTH_2;
           debugPaths.push(newPath);
         } else {
           const newPath = new paper.Path([curve.segment1, curve.segment2]);
           newPath.style.strokeColor = new paper.Color("#00FF00");
-          if (index % 2 === 0) {
-            newPath.style.strokeWidth = DEBUG_LINE_WIDTH_1;
-          } else {
-            newPath.style.strokeWidth = DEBUG_LINE_WIDTH_2;
-          }
+
+          newPath.style.strokeWidth = DEBUG_LINE_WIDTH_2;
+
           debugPaths.push(newPath);
         }
       });
@@ -419,25 +296,31 @@ const _smoothSinglePath: (
         debugNewPointsItems.push(circle);
       });
 
-      arcCurves.forEach((curve) => {
-        const newPath = new paper.Path([curve.segment1, curve.segment2]);
-        newPath.style.strokeColor = new paper.Color("#FFFFFF");
-        newPath.style.strokeWidth = DEBUG_LINE_WIDTH_2;
-        newPath.style.dashArray = [10, 10];
-        debugPaths.push(newPath);
-      });
+      const debugResultPath = resultPath.clone();
+      debugResultPath.style.strokeColor = new paper.Color("#FFFFFF");
+      debugResultPath.style.strokeWidth = 5;
+      debugResultPath.style.dashArray = [10, 10];
+      debugResultPath.style.dashOffset = 10;
+      debugResultPath.opacity = 0.5;
 
       item.addChildren(debugPaths);
       item.addChildren([firstCurve]);
       item.addChildren(debugNewPointsItems);
-      // item.addChildren(debugMidLinearSegmentedPathCurvesPaths);
+      item.addChildren([debugResultPath]);
     }
+
+    // 디버깅용 변수 초기화
+    debugPaths = [];
+
+    // 원본 path 제거
+    path.remove();
+
+    // 결과 path 추가
+    item.addChildren([resultPath]);
+
     // 프로젝트 제거
     paper.project.remove();
 
     // 반환
     return item;
   });
-
-export const smoothSinglePath = (roundness: number) =>
-  provideDependencies(_smoothSinglePath(roundness));

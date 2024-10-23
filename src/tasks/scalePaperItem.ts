@@ -2,26 +2,23 @@ import { Effect } from "effect";
 import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
-import { provideDependencies } from "../provideDependencies";
 
-const _scalePaperItem: (scale: number) => ProcessTask<Paper.Item, Paper.Item> =
-  (scale) => (item: Paper.Item) =>
-    Effect.gen(function* () {
-      // 의존성 로드
-      const paperEngine = yield* PaperEngine;
+export const scalePaperItem: (
+  scale: number
+) => ProcessTask<Paper.Item, Paper.Item> = (scale) => (item: Paper.Item) =>
+  Effect.gen(function* () {
+    // 의존성 로드
+    const paperEngine = yield* PaperEngine;
 
-      // 환경 설정
-      const paper = yield* paperEngine.setup(100, 100);
+    // 환경 설정
+    const paper = yield* paperEngine.setup(100, 100);
 
-      // 작업 수행
-      item.scale(scale, item.bounds.topLeft);
+    // 작업 수행
+    item.scale(scale, item.bounds.topLeft);
 
-      // 프로젝트 제거
-      paper.project.remove();
+    // 프로젝트 제거
+    paper.project.remove();
 
-      // 반환
-      return item;
-    });
-
-export const scalePaperItem = (scale: number) =>
-  provideDependencies(_scalePaperItem(scale));
+    // 반환
+    return item;
+  });

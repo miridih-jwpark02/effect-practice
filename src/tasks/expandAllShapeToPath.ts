@@ -4,7 +4,7 @@ import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
 import { provideDependencies } from "../provideDependencies";
 
-const _expandAllShapeToPath: ProcessTask<Paper.Item, Paper.Item> = (
+export const expandAllShapeToPath: ProcessTask<Paper.Item, Paper.Item> = (
   item: Paper.Item
 ) =>
   Effect.gen(function* () {
@@ -45,5 +45,3 @@ const _expandAllShapeToPath: ProcessTask<Paper.Item, Paper.Item> = (
     // 반환
     return item;
   });
-
-export const expandAllShapeToPath = provideDependencies(_expandAllShapeToPath);

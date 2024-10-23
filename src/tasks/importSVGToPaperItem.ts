@@ -2,9 +2,8 @@ import { Effect } from "effect";
 import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper";
-import { provideDependencies } from "../provideDependencies";
 
-const _importSVGToPaperItem: ProcessTask<string, Paper.Item> = (
+export const importSVGToPaperItem: ProcessTask<string, Paper.Item> = (
   svgString: string
 ) =>
   Effect.gen(function* () {
@@ -25,5 +24,3 @@ const _importSVGToPaperItem: ProcessTask<string, Paper.Item> = (
     // 반환
     return item;
   });
-
-export const importSVGToPaperItem = provideDependencies(_importSVGToPaperItem);
