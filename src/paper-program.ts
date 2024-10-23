@@ -6,12 +6,12 @@ import { mergeToSinglePath } from "./tasks/mergeToSinglePath";
 import { expandAllShapeToPath } from "./tasks/expandAllShapeToPath";
 import { smoothSinglePath } from "./tasks/smoothSinglePath";
 
-const mockSVGString = `<svg width="1241" height="752" viewBox="0 0 1241 752" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="454.618" width="302.206" height="685" fill="#5D2626"/>
-<rect width="302.206" height="685" fill="#5D2626"/>
-<rect x="938" width="302.206" height="685" fill="#5D2626"/>
-<path d="M188.249 447.849C161.435 440.445 145.701 412.705 153.105 385.892L206.731 191.689C214.136 164.875 241.875 149.141 268.689 156.545L1051.86 237.062C1078.67 244.466 1094.4 272.205 1087 299.019L1033.37 493.222C1025.97 520.035 998.23 535.77 971.417 528.366L188.249 447.849Z" fill="#D23434"/>
-<circle cx="844" cy="602" r="150" fill="#D9D9D9"/>
+const mockSVGString = `<svg width="1241" height="993" viewBox="0 0 1241 993" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="455" y="241" width="520" height="685" fill="#5D2626"/>
+<rect y="241" width="302.206" height="685" fill="#5D2626"/>
+<rect x="938" y="241" width="302.206" height="685" fill="#5D2626"/>
+<path d="M175.748 333.606C148.148 330.135 128.587 304.947 132.058 277.348L157.197 77.4515C160.668 49.8516 185.856 30.2912 213.456 33.7622L1000.06 0.80796C1027.66 4.2789 1047.22 29.4668 1043.75 57.0667L1018.61 256.963C1015.14 284.563 989.953 304.123 962.353 300.652L175.748 333.606Z" fill="#D23434"/>
+<circle cx="844" cy="843" r="150" fill="#D9D9D9"/>
 </svg>
 `;
 
