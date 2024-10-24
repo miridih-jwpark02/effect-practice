@@ -13,7 +13,7 @@ export const defaultPaperTask: (
       const paperEngine = yield* PaperEngine;
 
       // 환경 설정
-      const paper = yield* paperEngine.setup(100, 100);
+      const paper = yield* paperEngine.setup(1000, 1000);
 
       // 작업 수행
 

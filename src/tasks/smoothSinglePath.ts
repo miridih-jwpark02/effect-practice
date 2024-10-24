@@ -1,4 +1,4 @@
-const DEBUG = true;
+const DEBUG = false;
 
 import { Effect, Console, Either } from "effect";
 import { ProcessTask } from "./types";
@@ -14,26 +14,42 @@ import { circularForEach, circularModulo } from "./utils/iterate";
 
 import { isSinglePath } from "./utils/guard";
 
+type SmoothSinglePathParams = {
+  item: Paper.Item;
+  roundness: number;
+  size?: {
+    width: number;
+    height: number;
+  };
+};
+
+type SmoothSinglePathResult = {
+  item: Paper.Item;
+};
+
 /**
- * 단일 path를 부드럽게 만드는 함수
  * @param roundness - 둥근 정도 (0 ~ 100)
  * @returns 부드러운 path
  */
-export const smoothSinglePath: (
-  roundness: number
-) => ProcessTask<Paper.Item, Paper.Item> = (roundness) => (item: Paper.Item) =>
+export const smoothSinglePath: ProcessTask<
+  SmoothSinglePathParams,
+  SmoothSinglePathResult
+> = (params: SmoothSinglePathParams) =>
   Effect.gen(function* () {
     // 의존성 로드
     const paperEngine = yield* PaperEngine;
 
     // 환경 설정
-    const paper = yield* paperEngine.setup(100, 100);
+    const paper = yield* paperEngine.setup(
+      params.size?.width ?? 1000,
+      params.size?.height ?? 1000
+    );
 
     // 디버깅용 변수
     let debugPaths: Paper.Path[] = [];
 
     // 작업 수행
-    const paths = item.getItems({
+    const paths = params.item.getItems({
       class: paper.Path,
     }) as Paper.Path[];
 
@@ -120,7 +136,7 @@ export const smoothSinglePath: (
     );
 
     // 실제로 변화시킬 길이
-    const referenceLength = (minLength * roundness) / 100;
+    const referenceLength = (minLength * params.roundness) / 100;
 
     const flatCurves: Paper.Curve[] = [];
 
@@ -243,6 +259,7 @@ export const smoothSinglePath: (
 
     const unitedPath = [...resultArcs, ...resultFlats]
       .sort((a, b) => a.index - b.index)
+      .filter((path) => path.path.length > 0)
       .map((path) => path.path)
       .reduce((acc, path) => {
         acc.join(path);
@@ -311,10 +328,10 @@ export const smoothSinglePath: (
       debugResultPath.style.dashOffset = 10;
       debugResultPath.opacity = 0.5;
 
-      item.addChildren(debugPaths);
-      item.addChildren([firstCurve]);
-      item.addChildren(debugNewPointsItems);
-      item.addChildren([debugResultPath]);
+      params.item.addChildren(debugPaths);
+      params.item.addChildren([firstCurve]);
+      params.item.addChildren(debugNewPointsItems);
+      params.item.addChildren([debugResultPath]);
     }
 
     // 디버깅용 변수 초기화
@@ -325,12 +342,14 @@ export const smoothSinglePath: (
 
     // 결과 path 추가
     if (!DEBUG) {
-      item.addChildren([resultPath]);
+      params.item.addChildren([resultPath]);
     }
 
     // 프로젝트 제거
     paper.project.remove();
 
     // 반환
-    return item;
+    return {
+      item: params.item,
+    };
   });
