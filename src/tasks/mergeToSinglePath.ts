@@ -1,38 +1,15 @@
-import { Effect } from "effect";
-import { ProcessTask } from "./types";
+import { Effect, Ref } from "effect";
+
 import { PaperEngine } from "../svg-engine/paper-engine";
-import type { Paper } from "../paper";
+import type { Paper } from "../paper/type";
 
-type MergeToSinglePathParams = {
-  item: Paper.Item;
-  size?: {
-    width: number;
-    height: number;
-  };
-};
-
-type MergeToSinglePathResult = {
-  item: Paper.Item;
-};
-
-export const mergeToSinglePath: ProcessTask<
-  MergeToSinglePathParams,
-  MergeToSinglePathResult
-> = (params: MergeToSinglePathParams) =>
+export const mergeToSinglePath = (item: Paper.Item) =>
   Effect.gen(function* () {
     // 의존성 로드
-    const paperEngine = yield* PaperEngine;
-
-    // 환경 설정
-    const paper = yield* paperEngine.setup(
-      params.size?.width ?? 1000,
-      params.size?.height ?? 1000
-    );
-
-    // 작업 수행
+    const { paper } = yield* PaperEngine;
 
     // item 내부의 모든 패스를 하나의 패스로 병합
-    const targetPaths = params.item.getItems({
+    const targetPaths = item.getItems({
       class: paper.Path,
     }) as Paper.Path[];
 
@@ -40,16 +17,15 @@ export const mergeToSinglePath: ProcessTask<
       return new paper.Path(acc.unite(path).pathData);
     }, targetPaths[0]);
 
+    // 임의의 색상으로 설정
     newPath.style.fillColor = new paper.Color("#000000");
 
-    params.item.removeChildren();
+    // 기존 자식 제거
+    item.removeChildren();
 
-    params.item.addChildren([newPath]);
-    // 프로젝트 제거
-    paper.project.remove();
+    // 새로운 자식 추가
+    item.addChildren([newPath]);
 
     // 반환
-    return {
-      item: params.item,
-    };
+    return item;
   });

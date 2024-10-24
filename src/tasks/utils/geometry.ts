@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import type { Paper } from "../../paper";
+import type { Paper } from "../../paper/type";
 import { circularForEach } from "./iterate";
 
 /**

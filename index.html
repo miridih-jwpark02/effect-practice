@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>title</title>
-    <script type="module" src="./src/index.ts"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Processor</title>
     <style>
         body {
             background: 
@@ -65,25 +65,7 @@
     </style>
 </head>
 <body>
-    <div id="container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
-        <div id="result" ></div>
-        <div id="charts-container">
-            <div id="candleChart"></div>
-            <div id="pieChart"></div>
-        </div>
-        <div id="controls-container">
-            <div id="controls" class="controls-grid" style="padding: 10px; box-sizing: border-box;">
-                <textarea id="svg-input" placeholder="SVG 코드를 여기에 붙여넣으세요"></textarea>
-
-                <label for="range-scale">Scale</label>
-                <input id="range-scale" type="range" min="50" max="300" value="50" />
-                <label id="label-scale">50</label>
-        
-                <label for="range-roundness">Roundness</label>
-                <input id="range-roundness" type="range" min="0" max="100" value="50" />
-                <label id="label-roundness">50</label>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
 </body>
 </html>

@@ -1,39 +1,14 @@
 import { Effect } from "effect";
-import { ProcessTask } from "./types";
 import { PaperEngine } from "../svg-engine/paper-engine";
-import type { Paper } from "../paper";
-import { provideDependencies } from "../provideDependencies";
+import type { Paper } from "../paper/type";
 
-type ExpandAllShapeToPathParams = {
-  item: Paper.Item;
-  size?: {
-    width: number;
-    height: number;
-  };
-};
-
-type ExpandAllShapeToPathResult = {
-  item: Paper.Item;
-};
-
-export const expandAllShapeToPath: ProcessTask<
-  ExpandAllShapeToPathParams,
-  ExpandAllShapeToPathResult
-> = (params: ExpandAllShapeToPathParams) =>
+export const expandAllShapeToPath = (item: Paper.Item) =>
   Effect.gen(function* () {
     // 의존성 로드
-    const paperEngine = yield* PaperEngine;
-
-    // 환경 설정
-    const paper = yield* paperEngine.setup(
-      params.size?.width ?? 1000,
-      params.size?.height ?? 1000
-    );
-
-    // 작업 수행
+    const { paper } = yield* PaperEngine;
 
     // item 내부의 모든 Shape를 Path로 변환
-    const targetShapes = params.item.getItems({
+    const targetShapes = item.getItems({
       recursive: true,
       class: paper.Shape,
     }) as Paper.Shape[];
@@ -53,13 +28,8 @@ export const expandAllShapeToPath: ProcessTask<
     });
 
     // 변환된 패스 추가
-    params.item.addChildren(filteredConvertedPaths);
-
-    // 프로젝트 제거
-    paper.project.remove();
+    item.addChildren(filteredConvertedPaths);
 
     // 반환
-    return {
-      item: params.item,
-    };
+    return item;
   });

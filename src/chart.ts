@@ -1,4 +1,4 @@
-import { PerformanceResult } from "./paper-program";
+import { PerformanceResult } from "./programs/test";
 import * as d3 from "d3";
 
 /**

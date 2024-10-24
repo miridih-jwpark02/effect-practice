@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import type { Paper } from "../../paper";
+import type { Paper } from "../../paper/type";
 
 // path 개수 검증
 export const isSinglePath = (paths: Paper.Path[]) =>
