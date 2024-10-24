@@ -1,4 +1,4 @@
-import { Effect, Ref } from "effect";
+import { Effect, Layer, Ref } from "effect";
 import { PaperEngine, PaperEngineLive } from "./svg-engine/paper-engine";
 import {
   SVGProcessorContext,
@@ -82,7 +82,7 @@ import {
  * SVG 처리를 위한 singleton class
  */
 export class SvgProcessor {
-  private static animationFrameId: number | null = null;
+  private animationFrameId: number | null = null;
 
   /**
    * SVG 처리를 실행하되, requestAnimationFrame을 사용하여 debounce 적용
@@ -90,7 +90,7 @@ export class SvgProcessor {
    * @param {Effect.Effect<{ svg: SVGElement }, never>} program - SVG 처리 프로그램
    * @returns {Promise<{ svg: SVGElement }>} 처리된 SVG 결과
    */
-  public static run = (
+  public run = (
     options: SVGProcessorContextData,
     program: Effect.Effect<SVGElement, Error, SVGProcessorContext | PaperEngine>
   ): Promise<SVGElement> => {

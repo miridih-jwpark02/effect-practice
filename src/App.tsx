@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { performanceSubject, testProgram } from "./programs/test";
+import { performanceSubject } from "./programs/test";
 import { updateCandleChart, updatePieChart } from "./chart";
-import { SvgProcessor } from "./paper-program";
-import { Effect } from "effect";
-import { shapeProgram } from "./programs/shape";
-
+import { Renderer } from "./Renderer";
+import { ShapeRenderer } from "./ShapeRenderer";
 /**
  * 초기 SVG 문자열
  */
@@ -15,47 +13,6 @@ const initialSvg = `<svg width="1241" height="1076" viewBox="0 0 1241 1076" fill
 <path d="M158.671 483.329C132.701 469.313 119.954 422.224 130.2 378.154L657.926 58.9712C668.171 14.9012 697.53 -9.46211 723.5 4.55412L958.5 142.5C984.47 156.516 1137.25 98.43 1127 142.5L997.229 612.792C986.983 656.862 957.625 681.225 931.655 667.209L158.671 483.329Z" fill="#D23434"/>
 <circle cx="844" cy="926" r="150" fill="#D9D9D9"/>
 </svg>`;
-
-const processSVG = async (
-  svgString: string,
-  scale: number,
-  roundness: number,
-  displaySize?: {
-    width: number;
-    height: number;
-  }
-) => {
-  const svgElement = new DOMParser().parseFromString(
-    svgString,
-    "image/svg+xml"
-  );
-
-  const width = svgElement.documentElement.getAttribute("width");
-  const height = svgElement.documentElement.getAttribute("height");
-
-  const svgResourceSize = {
-    width: Number(width),
-    height: Number(height),
-  };
-
-  const svgDisplaySize = displaySize ?? {
-    width: (svgResourceSize.width * scale) / 100,
-    height: (svgResourceSize.height * scale) / 100,
-  };
-
-  const svg = await SvgProcessor.run(
-    {
-      svgString,
-      roundness,
-      resourceSize: svgResourceSize,
-      displaySize: svgDisplaySize,
-    },
-    testProgram
-    // shapeProgram
-  );
-
-  return svg;
-};
 
 /**
  * App component
@@ -76,25 +33,6 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const _processSVG = useCallback(async () => {
-    if (!svgInput) return;
-
-    try {
-      const result = await processSVG(svgInput, scale, roundness);
-
-      if (resultElement.current) {
-        resultElement.current.innerHTML = "";
-        resultElement.current.appendChild(result);
-      }
-    } catch (error) {
-      console.error("SVG 처리 중 오류 발생:", error);
-    }
-  }, [svgInput, scale, roundness]);
-
-  useEffect(() => {
-    _processSVG();
-  }, [_processSVG]);
-
   const handleSvgInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setSvgInput(e.target.value);
   };
@@ -110,7 +48,10 @@ const App: React.FC = () => {
         height: "100vh",
       }}
     >
-      <div id="result" ref={resultElement}></div>
+      <Renderer svgString={svgInput} scale={scale} roundness={roundness} />
+
+      {/* <ShapeRenderer svgString={svgInput} scale={scale} roundness={roundness} /> */}
+
       <div id="charts-container">
         <div id="candleChart"></div>
         <div id="pieChart"></div>
