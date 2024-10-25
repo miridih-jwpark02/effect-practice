@@ -114,8 +114,11 @@ $$ \text{absBetweenAngle} = (\text{vector2.angle} - \text{vector1.angle} + 360) 
 ### 1. 각도 계산
 
 두 벡터 사이의 각도를 계산합니다:
+- 각도는 $+x$축 방향을 기준으로 반시계 방향으로 증가하는 0° ~ 360°의 범위를 가집니다.
 
-$$ \text{absBetweenAngle} = (\text{vector2.angle} - \text{vector1.angle} + 360) \mod 360 $$
+$$ \text{getAbsBetweenAngle}(\mathbf{v}_1, \mathbf{v}_2) = (\mathbf{v}_2.angle - \mathbf{v}_1.angle + 360) \mod 360 $$
+
+---
 
 ### 2. Arc 생성
 
@@ -127,13 +130,15 @@ $$ \text{multiplier} = \left|\frac{1}{\cos(\theta/2)} - \tan(\theta/2)\right| \c
 
 이 multiplier를 사용하여 arc의 중간점(arcThrough)을 계산합니다:
 
+$$ \text{directionVector} = \frac{\mathbf{v}_2 - \mathbf{v}_1}{||\mathbf{v}_2 - \mathbf{v}_1||} $$
+
 $$ \text{arcThrough} = \text{primaryPoint} + \text{directionVector} \cdot |\text{multiplier}| $$
 
 ### 3. 참조 길이 계산
 
 부드러운 곡선의 정도를 결정하는 참조 길이:
 
-$$ \text{referenceLength} = \frac{\text{minLength} \cdot \text{context.roundness}}{100} $$
+$$ \text{referenceLength} = \text{minLength} \cdot \text{roundness} $$
 
 ## 주요 함수
 

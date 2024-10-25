@@ -1,5 +1,3 @@
-const DEBUG = true;
-
 import { Effect, Console, Either, Ref, pipe } from "effect";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper/type";
@@ -27,6 +25,8 @@ export const smoothSinglePath = (item: Paper.Item) =>
     // 컨텍스트 로드
     const contextRef = yield* SVGProcessorContext;
     const context = yield* Ref.get(contextRef);
+
+    const DEBUG = context.debug;
 
     // 디버깅용 변수
     let debugPaths: Paper.Path[] = [];
@@ -216,18 +216,13 @@ export const smoothSinglePath = (item: Paper.Item) =>
         return resultArc;
       });
 
-    // 여기서만 사용할 타입
-    type ResultPath = {
+    // 결과에서만 사용할 타입
+    type _ResultPath = {
       path: Paper.Path;
       index: number;
     };
 
-    // const resultArcs: ResultPath[] = angleIndexes.map((angleIndex) => ({
-    //   path: yield* createArc(angleIndex),
-    //   index: angleIndex,
-    // }));
-
-    const resultArcs: ResultPath[] = yield* Effect.all(
+    const resultArcs: _ResultPath[] = yield* Effect.all(
       angleIndexes
         .sort((a, b) => a - b)
         .map((angleIndex) =>
@@ -241,7 +236,7 @@ export const smoothSinglePath = (item: Paper.Item) =>
         )
     );
 
-    const resultFlats: ResultPath[] = flatCurves.map((curve, index) => ({
+    const resultFlats: _ResultPath[] = flatCurves.map((curve, index) => ({
       path: new paper.Path([curve.segment1, curve.segment2]),
       index,
     }));

@@ -9,7 +9,8 @@ const processSVG = async (
   displaySize?: {
     width: number;
     height: number;
-  }
+  },
+  debug?: boolean
 ) => {
   const svgElement = new DOMParser().parseFromString(
     svgString,
@@ -38,6 +39,7 @@ const processSVG = async (
       resourceSize: svgResourceSize,
       displaySize: svgDisplaySize,
       useCache: true,
+      debug: debug ?? false,
     },
     testProgram
     // shapeProgram
@@ -50,11 +52,12 @@ export const Renderer: React.FC<{
   svgString: string;
   scale: number;
   roundness: number;
-}> = ({ svgString, scale, roundness }) => {
+  debug: boolean;
+}> = ({ svgString, scale, roundness, debug }) => {
   const svgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    processSVG(svgString, scale, roundness).then((svg) => {
+    processSVG(svgString, scale, roundness, undefined, debug).then((svg) => {
       if (svgRef.current) {
         svgRef.current.innerHTML = "";
         svgRef.current.appendChild(svg);

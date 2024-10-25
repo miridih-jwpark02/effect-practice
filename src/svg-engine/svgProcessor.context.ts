@@ -22,6 +22,7 @@ export type SVGProcessorContextData = {
    * PaperItem instance
    */
   paperItem?: Paper.Item;
+  debug: boolean;
 };
 
 export class SVGProcessorContext extends Context.Tag("SVGProcessorContext")<

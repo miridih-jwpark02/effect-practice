@@ -24,7 +24,10 @@ export class SvgProcessor {
    * @returns {Promise<SVGElement>} 처리된 SVG 결과
    */
   public run = (
-    options: Omit<SVGProcessorContextData, "paperItem"> & { useCache: boolean },
+    options: Omit<SVGProcessorContextData, "paperItem" | "debug"> & {
+      useCache: boolean;
+      debug?: boolean;
+    },
     program: Effect.Effect<SVGElement, Error, SVGProcessorContext | PaperEngine>
   ): Promise<SVGElement> => {
     return new Promise((resolve) => {
@@ -44,6 +47,7 @@ export class SvgProcessor {
             Ref.make<SVGProcessorContextData>({
               ...options,
               paperItem,
+              debug: options.debug ?? false,
             })
           );
 

@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [svgInput, setSvgInput] = useState<string>(initialSvg);
   const [scale, setScale] = useState<number>(50);
   const [roundness, setRoundness] = useState<number>(50);
+  const [debug, setDebug] = useState<boolean>(false);
   const resultElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,7 +49,12 @@ const App: React.FC = () => {
         height: "100vh",
       }}
     >
-      <Renderer svgString={svgInput} scale={scale} roundness={roundness} />
+      <Renderer
+        svgString={svgInput}
+        scale={scale}
+        roundness={roundness}
+        debug={debug}
+      />
 
       {/* <ShapeRenderer svgString={svgInput} scale={scale} roundness={roundness} /> */}
 
@@ -68,6 +74,16 @@ const App: React.FC = () => {
             value={svgInput}
             onChange={handleSvgInputChange}
           />
+
+          <label htmlFor="checkbox-debug">Debug</label>
+
+          <input
+            id="checkbox-debug"
+            type="checkbox"
+            checked={debug}
+            onChange={(e) => setDebug(e.target.checked)}
+          />
+          <br />
 
           <label htmlFor="range-scale">Scale</label>
           <input
