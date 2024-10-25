@@ -22,7 +22,7 @@ export const importSVGToPaperItem = Effect.gen(function* () {
   const context = yield* Ref.get(contextRef);
 
   if (context.paperItem) {
-    paper.setup([1, 1]);
+    paper.setup([0.1, 0.1]);
     return context.paperItem.clone();
   }
 

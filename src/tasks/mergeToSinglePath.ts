@@ -14,17 +14,22 @@ export const mergeToSinglePath = (item: Paper.Item) =>
     }) as Paper.Path[];
 
     const newPath = targetPaths.reduce((acc, path) => {
-      return new paper.Path(acc.unite(path).pathData);
+      return acc.unite(path) as Paper.Path;
     }, targetPaths[0]);
 
     // 임의의 색상으로 설정
-    newPath.style.fillColor = new paper.Color("#000000");
+    newPath.style = {
+      fillColor: new paper.Color("#000000"),
+    } as Paper.Style;
 
     // 기존 자식 제거
     item.removeChildren();
 
     // 새로운 자식 추가
     item.addChildren([newPath]);
+
+    // project clear
+    paper.project.clear();
 
     // 반환
     return item;

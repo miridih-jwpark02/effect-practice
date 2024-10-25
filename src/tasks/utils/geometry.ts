@@ -112,12 +112,12 @@ export const getMidLinearIndexes = (
 };
 
 /**
- * 두 curve 사이의 각도를 반환하는 함수
+ * 두 curve 간의 각도를 반환하는 함수
  * @param curve1 - 첫 번째 curve
  * @param curve2 - 두 번째 curve
  * @returns Effect로 감싸진 각도 (1번 커브에서 2번 커브로 반시계가 +)
  */
-export const getBetweenAngle = (
+export const getAngleFromCurves = (
   curve1: Paper.Curve,
   curve2: Paper.Curve
 ): Effect.Effect<number, Error, never> => {
@@ -130,6 +130,38 @@ export const getBetweenAngle = (
     const directionVector1 = yield* getAngleFromLinearCurve(curve1);
     const directionVector2 = yield* getAngleFromLinearCurve(curve2);
 
-    return directionVector2 - directionVector1;
+    return (directionVector2 - directionVector1 + 360) % 360;
+  });
+};
+
+/**
+ * 두 curve 사이의 각의 크기 (0~360)를 반환하는 함수
+ * @param curve1 - 첫 번째 curve
+ * @param curve2 - 두 번째 curve
+ * @returns Effect로 감싸진 각의 크기
+ */
+export const getAbsBetweenAngleFromCurves = (
+  curve1: Paper.Curve,
+  curve2: Paper.Curve
+): Effect.Effect<number, Error, never> => {
+  return Effect.gen(function* (_) {
+    const angle = yield* getAngleFromCurves(curve1, curve2);
+    return angle > 180 ? 360 - angle : angle;
+  });
+};
+
+/**
+ * 두 Vector 사이의 각의 크기 (0~180)를 반환하는 함수
+ * @param vector1 - 첫 번째 vector
+ * @param vector2 - 두 번째 vector
+ * @returns Effect로 감싸진 각의 크기
+ */
+export const getAbsBetweenAngleFromVectors = (
+  vector1: Paper.Point,
+  vector2: Paper.Point
+): Effect.Effect<number, never, never> => {
+  return Effect.gen(function* (_) {
+    const angle = Math.abs(vector2.angle - vector1.angle);
+    return angle > 180 ? 360 - angle : angle;
   });
 };

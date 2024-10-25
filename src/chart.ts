@@ -14,7 +14,7 @@ export function updateCandleChart(performanceResult: PerformanceResult) {
   const data = Object.entries(performanceResult.steps)
     .filter(([step]) => step !== "total")
     .map(([step, times], index) => ({
-      step: `Step ${index + 1}`,
+      step: `Task ${index + 1}`,
       low: Math.min(...times),
       open: percentile(times, 25),
       close: percentile(times, 75),
@@ -212,18 +212,25 @@ export function updatePieChart(performanceResult: PerformanceResult): void {
     .style("text-anchor", "middle")
     .text((d) => d.data.label.split(".")[0]);
 
-  // Legend 추가
-  const legend = svg
+  // Total 값 계산
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  // Legend 및 Total 추가
+  const legendGroup = svg
+    .selectAll(".legend-group")
+    .data([null])
+    .join("g")
+    .attr("class", "legend-group")
+    .attr("transform", `translate(${radius + 20},${-radius})`);
+
+  const legendItems = legendGroup
     .selectAll(".legend")
     .data(data)
     .join("g")
     .attr("class", "legend")
-    .attr(
-      "transform",
-      (d, i) => `translate(${radius + 20},${-radius + i * 20})`
-    );
+    .attr("transform", (d, i) => `translate(0,${i * 20})`);
 
-  legend
+  legendItems
     .selectAll("rect")
     .data((d) => [d])
     .join("rect")
@@ -231,7 +238,7 @@ export function updatePieChart(performanceResult: PerformanceResult): void {
     .attr("height", 10)
     .attr("fill", (d) => color(d.label));
 
-  legend
+  legendItems
     .selectAll("text")
     .data((d) => [d])
     .join("text")
@@ -240,6 +247,17 @@ export function updatePieChart(performanceResult: PerformanceResult): void {
     .attr("font-size", "12px")
     .attr("fill", "white")
     .text((d) => `${d.label}: ${d.value.toFixed(2)} ms`);
+
+  // Total 표시 (legend의 맨 아래에)
+  legendGroup
+    .append("text")
+    .attr("class", "total-text")
+    .attr("x", 0)
+    .attr("y", data.length * 20 + 15)
+    .attr("font-size", "14px")
+    .attr("font-weight", "bold")
+    .attr("fill", "white")
+    .text(`Total: ${total.toFixed(2)} ms`);
 }
 
 /**

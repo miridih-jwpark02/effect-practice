@@ -39,7 +39,7 @@ export class PaperItemManager {
 
       console.log("cache miss:", hash);
 
-      this.paper.setup([1, 1]); // temporary setup
+      this.paper.setup([0.1, 0.1]); // temporary setup
 
       const item = this.paper.project.importSVG(svgString);
       this.itemCache.set(hash, item);
@@ -48,7 +48,7 @@ export class PaperItemManager {
 
       return item;
     } else {
-      this.paper.setup([1, 1]); // temporary setup
+      this.paper.setup([0.1, 0.1]); // temporary setup
       const item = this.paper.project.importSVG(svgString);
       this.paper.project.remove();
 

@@ -11,6 +11,7 @@ export const exportPaperItemToSVGElement = (item: Paper.Item) =>
     const contextRef = yield* SVGProcessorContext;
     const context = yield* Ref.get(contextRef);
 
+    paper.project.clear();
     // 작업 수행
     const currentLayer = paper.project.activeLayer;
     currentLayer.addChild(item);

@@ -16,6 +16,7 @@ namespace Paper {
   export class Segment extends paper.Segment {}
   export class PointText extends paper.PointText {}
   export class Layer extends paper.Layer {}
+  export class Style extends paper.Style {}
 }
 
 export type { Paper };

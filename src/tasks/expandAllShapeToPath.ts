@@ -30,6 +30,9 @@ export const expandAllShapeToPath = (item: Paper.Item) =>
     // 변환된 패스 추가
     item.addChildren(filteredConvertedPaths);
 
+    // project clear
+    paper.project.clear();
+
     // 반환
     return item;
   });

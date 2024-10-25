@@ -1,13 +1,14 @@
-const DEBUG = false;
+const DEBUG = true;
 
-import { Effect, Console, Either, Ref } from "effect";
+import { Effect, Console, Either, Ref, pipe } from "effect";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper/type";
 import {
   getMidLinearIndexes,
   getSplitCurves,
   getMinLengthFromCurves,
-  getBetweenAngle,
+  getAbsBetweenAngleFromCurves,
+  getAbsBetweenAngleFromVectors,
 } from "./utils/geometry";
 import { circularForEach, circularModulo } from "./utils/iterate";
 
@@ -47,8 +48,6 @@ export const smoothSinglePath = (item: Paper.Item) =>
     // path.curves에 대해 midlinear indexes
     const midLinearIndexes = yield* getMidLinearIndexes(path.curves);
 
-    yield* Console.log("midLinearIndexes", midLinearIndexes);
-
     // midlinear indexes에 대해 2개로 split
     const midLinearSegmentedPathCurves: Paper.Curve[] = (yield* Effect.all(
       path.curves.map((curve, index) => {
@@ -59,12 +58,6 @@ export const smoothSinglePath = (item: Paper.Item) =>
         }
       })
     )).flat();
-
-    yield* Console.log("path curves length", path.curves.length);
-    yield* Console.log(
-      "midLinearSegmentedPathCurves length",
-      midLinearSegmentedPathCurves.length
-    );
 
     // 최소 길이 계산
     const minLength = yield* getMinLengthFromCurves(
@@ -88,7 +81,7 @@ export const smoothSinglePath = (item: Paper.Item) =>
       (curvesWindow, index) =>
         Effect.gen(function* (_) {
           const angleResult = yield* Effect.either(
-            getBetweenAngle(curvesWindow[0], curvesWindow[1])
+            getAbsBetweenAngleFromCurves(curvesWindow[0], curvesWindow[1])
           );
 
           if (Either.isLeft(angleResult)) {
@@ -107,14 +100,6 @@ export const smoothSinglePath = (item: Paper.Item) =>
           angles.push(circularModulo(angle, 360));
         }),
       2
-    );
-
-    yield* Console.log("angleIndexes", angleIndexes);
-    yield* Console.log("angles", angles);
-
-    yield* Console.log(
-      "segmentedPathCurvesMidLinearIndexes",
-      segmentedPathCurvesMidLinearIndexes
     );
 
     // 실제로 변화시킬 길이
@@ -181,47 +166,55 @@ export const smoothSinglePath = (item: Paper.Item) =>
 
     // arc curve 계산.
 
-    const createArc = (angleIndex) => {
-      const vector1Index =
-        (angleIndex - 1 + midLinearSegmentedPathCurves.length) %
-        midLinearSegmentedPathCurves.length;
-      const vector2Index =
-        (angleIndex + midLinearSegmentedPathCurves.length) %
-        midLinearSegmentedPathCurves.length;
+    const createArc = (angleIndex: number) =>
+      Effect.gen(function* (_) {
+        const vector1Index =
+          (angleIndex - 1 + midLinearSegmentedPathCurves.length) %
+          midLinearSegmentedPathCurves.length;
+        const vector2Index =
+          (angleIndex + midLinearSegmentedPathCurves.length) %
+          midLinearSegmentedPathCurves.length;
 
-      const primaryPoint = midLinearSegmentedPathCurves[vector2Index].point1;
+        const primaryPoint = midLinearSegmentedPathCurves[vector2Index].point1;
 
-      const vector1 = midLinearSegmentedPathCurves[vector1Index].segment2.point
-        .subtract(midLinearSegmentedPathCurves[vector1Index].segment1.point)
-        .normalize();
-      const vector2 = midLinearSegmentedPathCurves[vector2Index].segment2.point
-        .subtract(midLinearSegmentedPathCurves[vector2Index].segment1.point)
-        .normalize();
+        const vector1 = midLinearSegmentedPathCurves[
+          vector1Index
+        ].segment2.point
+          .subtract(midLinearSegmentedPathCurves[vector1Index].segment1.point)
+          .normalize();
+        const vector2 = midLinearSegmentedPathCurves[
+          vector2Index
+        ].segment2.point
+          .subtract(midLinearSegmentedPathCurves[vector2Index].segment1.point)
+          .normalize();
 
-      const direnctionVector = vector2.add(vector1.multiply(-1)).normalize();
+        const direnctionVector = vector2.add(vector1.multiply(-1)).normalize();
 
-      const betweenAngle = (vector2.angle - vector1.angle + 360) % 360;
-      const betweenAngleInRadians = betweenAngle * (Math.PI / 180);
+        const absBetweenAngle = yield* getAbsBetweenAngleFromVectors(
+          vector1,
+          vector2.multiply(-1)
+        );
 
-      const multiplier =
-        Math.abs(
-          1 / Math.cos(betweenAngleInRadians / 2) -
-            Math.tan(betweenAngleInRadians / 2)
-        ) * referenceLength;
+        const absBetweenAngleInRadians = absBetweenAngle * (Math.PI / 180);
 
-      const arcThrough = primaryPoint.add(
-        direnctionVector.multiply(Math.abs(multiplier))
-      );
+        const multiplier =
+          ((1 - Math.sin(absBetweenAngleInRadians / 2)) /
+            Math.cos(absBetweenAngleInRadians / 2)) *
+          referenceLength;
 
-      debugNewPoints.push(arcThrough);
+        const arcThrough = primaryPoint.add(
+          direnctionVector.multiply(Math.abs(multiplier))
+        );
 
-      const arcFrom = primaryPoint.add(vector1.multiply(-referenceLength));
-      const arcTo = primaryPoint.add(vector2.multiply(referenceLength));
+        debugNewPoints.push(arcThrough);
 
-      const resultArc = new paper.Path.Arc(arcFrom, arcThrough, arcTo);
+        const arcFrom = primaryPoint.add(vector1.multiply(-referenceLength));
+        const arcTo = primaryPoint.add(vector2.multiply(referenceLength));
 
-      return resultArc;
-    };
+        const resultArc = new paper.Path.Arc(arcFrom, arcThrough, arcTo);
+
+        return resultArc;
+      });
 
     // 여기서만 사용할 타입
     type ResultPath = {
@@ -229,10 +222,24 @@ export const smoothSinglePath = (item: Paper.Item) =>
       index: number;
     };
 
-    const resultArcs: ResultPath[] = angleIndexes.map((angleIndex) => ({
-      path: createArc(angleIndex),
-      index: angleIndex,
-    }));
+    // const resultArcs: ResultPath[] = angleIndexes.map((angleIndex) => ({
+    //   path: yield* createArc(angleIndex),
+    //   index: angleIndex,
+    // }));
+
+    const resultArcs: ResultPath[] = yield* Effect.all(
+      angleIndexes
+        .sort((a, b) => a - b)
+        .map((angleIndex) =>
+          pipe(
+            createArc(angleIndex),
+            Effect.map((path) => ({
+              path,
+              index: angleIndex,
+            }))
+          )
+        )
+    );
 
     const resultFlats: ResultPath[] = flatCurves.map((curve, index) => ({
       path: new paper.Path([curve.segment1, curve.segment2]),
@@ -293,6 +300,7 @@ export const smoothSinglePath = (item: Paper.Item) =>
       });
 
       const debugNewPointsItems: Paper.Item[] = [];
+
       // 디버그 점 체크
       debugNewPoints.forEach((point) => {
         const circle = new paper.Shape.Circle({
