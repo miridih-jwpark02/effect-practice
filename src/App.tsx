@@ -12,6 +12,17 @@ const initialSvg = `<svg width="362" height="353" viewBox="0 0 362 353" fill="no
 `;
 
 /**
+ * SVG string에서 <svg> 태그와 그 내용을 추출
+ * @param rawString - SVG string이 포함된 문자열
+ * @returns SVG 태그와 그 내용을 포함한 문자열
+ */
+const extractPureSVGString = (rawString: string): string | Error => {
+  const svgRegex = /<svg[\s\S]*?<\/svg>/i;
+  const match = rawString.match(svgRegex);
+  return match ? match[0] : new Error("No SVG found");
+};
+
+/**
  * App component
  * @returns {JSX.Element} App component
  */
@@ -47,7 +58,11 @@ const App: React.FC = () => {
       }}
     >
       <Renderer
-        svgString={svgInput}
+        svgString={
+          extractPureSVGString(svgInput) instanceof Error
+            ? initialSvg
+            : (extractPureSVGString(svgInput) as string)
+        }
         scale={scale}
         roundness={roundness}
         debug={debug}

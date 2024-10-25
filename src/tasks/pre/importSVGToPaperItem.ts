@@ -21,23 +21,12 @@ export const importSVGToPaperItem = Effect.gen(function* () {
   const contextRef = yield* SVGProcessorContext;
   const context = yield* Ref.get(contextRef);
 
-  if (context.paperItem) {
-    paper.setup([0.1, 0.1]);
-    return context.paperItem.clone();
+  console.log("context", context);
+
+  if (!context.paperItem) {
+    return yield* Effect.fail(new Error("Use Paper Item Manager"));
   }
 
-  // 작업 수행
-  const item = paper.project.importSVG(context.svgString);
-  console.log("first import: layer bounds", paper.project.activeLayer.bounds);
-
-  // 아이템 초기 위치정보 저장
-  item.data = {
-    itemBounds: item.bounds,
-  };
-
-  console.log("context.resourceSize", context.resourceSize);
-  console.log("import:itembounds:", item.bounds);
-
-  // 반환
-  return item;
+  paper.setup([0.1, 0.1]);
+  return context.paperItem.clone();
 });

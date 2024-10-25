@@ -8,6 +8,8 @@ export const mergeToSinglePath = (item: Paper.Item) =>
     // 의존성 로드
     const { paper } = yield* PaperEngine;
 
+    console.log(item);
+
     // item 내부의 모든 패스를 하나의 패스로 병합
     const targetPaths = item.getItems({
       class: paper.Path,
@@ -27,6 +29,8 @@ export const mergeToSinglePath = (item: Paper.Item) =>
 
     // 새로운 자식 추가
     item.addChildren([newPath]);
+
+    console.log("processed", item);
 
     // project clear
     paper.project.clear();

@@ -24,18 +24,10 @@ export const exportPaperItemToSVGElement = (item: Paper.Item) =>
       asString: false,
     }) as SVGElement;
 
-    if (item.data) {
-      console.log("data founded", item.data.itemBounds, item.data.viewBox);
-      item.bounds = item.data.itemBounds;
-      paper.project.activeLayer.fitBounds(item.bounds);
-    }
-
     paper.project.activeLayer.bounds = new paper.Rectangle(
       new paper.Point(0, 0),
       new paper.Size(context.displaySize.width, context.displaySize.height)
     );
-
-    console.log("export:layerbounds:", paper.project.activeLayer.bounds);
 
     // 프로젝트 제거
     paper.projects.forEach((project) => {

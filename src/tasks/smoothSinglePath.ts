@@ -2,11 +2,11 @@ import { Effect, Console, Either, Ref, pipe } from "effect";
 import { PaperEngine } from "../svg-engine/paper-engine";
 import type { Paper } from "../paper/type";
 import {
-  getMidLinearIndexes,
   getSplitCurves,
   getMinLengthFromCurves,
   getAbsBetweenAngleFromCurves,
   getAbsBetweenAngleFromVectors,
+  getMidLinearIndexes,
 } from "./utils/geometry";
 import { circularForEach, circularModulo } from "./utils/iterate";
 
@@ -26,6 +26,10 @@ export const smoothSinglePath = (item: Paper.Item) =>
     const contextRef = yield* SVGProcessorContext;
     const context = yield* Ref.get(contextRef);
 
+    if (!context.debug && context.roundness === 0) {
+      return item;
+    }
+
     // 디버깅용 변수
     const DEBUG = context.debug;
     let debugPaths: Paper.Path[] = [];
@@ -41,6 +45,8 @@ export const smoothSinglePath = (item: Paper.Item) =>
 
     // alias for convenience
     const path = paths[0];
+
+    console.log("path curves", path.curves.length);
 
     // save path style
     const pathStyle = path.style;
@@ -65,11 +71,6 @@ export const smoothSinglePath = (item: Paper.Item) =>
       {
         onlyLinear: true,
       }
-    );
-
-    // midlinear indexes 계산: for segmented path curves
-    const segmentedPathCurvesMidLinearIndexes = getMidLinearIndexes(
-      midLinearSegmentedPathCurves
     );
 
     // angle indexes 계산: 해당 index에 해당하는 위치에 roundness corner curve를 삽입예정
@@ -236,6 +237,8 @@ export const smoothSinglePath = (item: Paper.Item) =>
         )
     );
 
+    console.log("resultArcs", resultArcs);
+
     const resultFlats: _ResultPath[] = flatCurves.map((curve, index) => ({
       path: new paper.Path([curve.segment1, curve.segment2]),
       index,
@@ -252,6 +255,8 @@ export const smoothSinglePath = (item: Paper.Item) =>
 
     const resultPath = unitedPath;
     resultPath.style = pathStyle;
+
+    console.log("resultPath", resultPath.pathData);
 
     if (DEBUG) {
       /** DEBUG SCOPE */

@@ -4,6 +4,7 @@ import {
   SVGProcessorContext,
   SVGProcessorContextData,
 } from "./svg-engine/svgProcessor.context";
+import { Paper } from "./paper/type";
 
 /**
  * SVG processing을 담당하는 클래스
@@ -24,7 +25,8 @@ export class SvgProcessor {
    * @returns {Promise<SVGElement>} 처리된 SVG 결과
    */
   public run = (
-    options: Omit<SVGProcessorContextData, "paperItem" | "debug"> & {
+    options: Omit<SVGProcessorContextData, "debug"> & {
+      svgString: string;
       useCache: boolean;
       debug?: boolean;
     },
@@ -45,7 +47,9 @@ export class SvgProcessor {
 
           const initialContext = yield* _(
             Ref.make<SVGProcessorContextData>({
-              ...options,
+              displaySize: options.displaySize,
+              resourceSize: options.resourceSize,
+              roundness: options.roundness,
               paperItem,
               debug: options.debug ?? false,
             })
@@ -63,3 +67,14 @@ export class SvgProcessor {
     });
   };
 }
+
+/**
+ * SVG string에서 <svg> 태그와 그 내용을 추출
+ * @param rawString - SVG string이 포함된 문자열
+ * @returns SVG 태그와 그 내용을 포함한 문자열
+ */
+const extractPureSVGString = (rawString: string): string | Error => {
+  const svgRegex = /<svg[\s\S]*?<\/svg>/i;
+  const match = rawString.match(svgRegex);
+  return match ? match[0] : new Error("No SVG found");
+};

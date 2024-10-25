@@ -2,7 +2,6 @@ import { Context, Ref } from "effect";
 import { Paper } from "../paper/type";
 
 export type SVGProcessorContextData = {
-  svgString: string;
   roundness: number;
   /**
    * SVG 파일 내 리소스 크기

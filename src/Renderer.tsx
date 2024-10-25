@@ -21,8 +21,8 @@ const processSVG = async (
   const height = svgElement.documentElement.getAttribute("height");
 
   const svgResourceSize = {
-    width: Number(width),
-    height: Number(height),
+    width: parseFloat(width ?? "0"),
+    height: parseFloat(height ?? "0"),
   };
 
   const svgDisplaySize = displaySize ?? {

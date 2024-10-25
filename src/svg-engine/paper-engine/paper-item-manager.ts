@@ -41,7 +41,18 @@ export class PaperItemManager {
 
       this.paper.setup([0.1, 0.1]); // temporary setup
 
-      const item = this.paper.project.importSVG(svgString);
+      const pureSVGString = extractPureSVGString(svgString);
+
+      console.log("pureSVGString", pureSVGString);
+
+      if (pureSVGString instanceof Error) {
+        throw pureSVGString;
+      }
+
+      const item = this.paper.project.importSVG(pureSVGString);
+
+      console.log("item", item);
+      console.log("item.bounds", item.bounds);
 
       this.itemCache.set(hash, item);
 
@@ -50,6 +61,11 @@ export class PaperItemManager {
       return item;
     } else {
       this.paper.setup([0.1, 0.1]); // temporary setup
+      const pureSVGString = extractPureSVGString(svgString);
+
+      if (pureSVGString instanceof Error) {
+        throw pureSVGString;
+      }
       const item = this.paper.project.importSVG(svgString);
       this.paper.project.remove();
 
@@ -66,3 +82,14 @@ export class PaperItemManager {
     this.itemCache.clear();
   }
 }
+
+/**
+ * SVG string에서 <svg> 태그와 그 내용을 추출
+ * @param rawString - SVG string이 포함된 문자열
+ * @returns SVG 태그와 그 내용을 포함한 문자열
+ */
+const extractPureSVGString = (rawString: string): string | Error => {
+  const svgRegex = /<svg[\s\S]*?<\/svg>/i;
+  const match = rawString.match(svgRegex);
+  return match ? match[0] : new Error("No SVG found");
+};
