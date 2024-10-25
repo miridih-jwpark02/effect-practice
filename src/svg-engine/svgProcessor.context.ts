@@ -1,4 +1,5 @@
 import { Context, Ref } from "effect";
+import { Paper } from "../paper/type";
 
 export type SVGProcessorContextData = {
   svgString: string;
@@ -17,6 +18,10 @@ export type SVGProcessorContextData = {
     width: number;
     height: number;
   };
+  /**
+   * PaperItem instance
+   */
+  paperItem?: Paper.Item;
 };
 
 export class SVGProcessorContext extends Context.Tag("SVGProcessorContext")<

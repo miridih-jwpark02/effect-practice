@@ -10,9 +10,7 @@ export const _importSVGToPaperItem = (
   svgString: string
 ) =>
   Effect.gen(function* () {
-    return paper.project.importSVG(svgString, {
-      expandShape: true,
-    });
+    return paper.project.importSVG(svgString);
   });
 
 export const importSVGToPaperItem = Effect.gen(function* () {
@@ -20,14 +18,16 @@ export const importSVGToPaperItem = Effect.gen(function* () {
   const { paper } = yield* PaperEngine;
 
   // 컨텍스트 로드
-  const context = yield* SVGProcessorContext;
-  const params = yield* Ref.get(context);
+  const contextRef = yield* SVGProcessorContext;
+  const context = yield* Ref.get(contextRef);
 
-  // 환경 설정
-  paper.setup([params.displaySize.width, params.displaySize.height]);
+  if (context.paperItem) {
+    paper.setup([1, 1]);
+    return context.paperItem.clone();
+  }
 
   // 작업 수행
-  const item = yield* _importSVGToPaperItem(paper, params.svgString);
+  const item = paper.project.importSVG(context.svgString);
 
   // 반환
   return item;

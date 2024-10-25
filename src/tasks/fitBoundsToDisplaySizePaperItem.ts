@@ -11,7 +11,6 @@ export const fitBoundsToDisplaySizePaperItem = (item: Paper.Item) =>
     // 스케일 계산
     const xScale = context.displaySize.width / context.resourceSize.width;
     const yScale = context.displaySize.height / context.resourceSize.height;
-
     // 작업 수행
     item.scale(xScale, yScale, item.bounds.topLeft);
 

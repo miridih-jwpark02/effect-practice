@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { SvgProcessor } from "./paper-program";
+import { SvgProcessor } from "./svg-processor";
 import { testProgram } from "./programs/test";
 
 const processSVG = async (
@@ -37,6 +37,7 @@ const processSVG = async (
       roundness,
       resourceSize: svgResourceSize,
       displaySize: svgDisplaySize,
+      useCache: true,
     },
     testProgram
     // shapeProgram
