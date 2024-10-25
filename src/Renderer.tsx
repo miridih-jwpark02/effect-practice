@@ -45,7 +45,7 @@ const processSVG = async (
     // shapeProgram
   );
 
-  return svg;
+  return { svg, resourceSize: svgResourceSize, displaySize: svgDisplaySize };
 };
 
 export const Renderer: React.FC<{
@@ -55,15 +55,41 @@ export const Renderer: React.FC<{
   debug: boolean;
 }> = ({ svgString, scale, roundness, debug }) => {
   const svgRef = useRef<HTMLDivElement>(null);
+  const [resourceSize, setResourceSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+  const [displaySize, setDisplaySize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
 
   useEffect(() => {
-    processSVG(svgString, scale, roundness, undefined, debug).then((svg) => {
-      if (svgRef.current) {
-        svgRef.current.innerHTML = "";
-        svgRef.current.appendChild(svg);
+    processSVG(svgString, scale, roundness, undefined, debug).then(
+      ({ svg, resourceSize, displaySize }) => {
+        if (svgRef.current) {
+          svgRef.current.innerHTML = "";
+          svgRef.current.appendChild(svg);
+        }
+        setResourceSize(resourceSize);
+        setDisplaySize(displaySize);
       }
-    });
+    );
   }, [svgString, scale, roundness]);
 
-  return <div id="result" ref={svgRef}></div>;
+  return (
+    <div style={{ position: "relative" }}>
+      <div id="result">
+        <div ref={svgRef}></div>
+        <div id="debug-info">
+          <div>
+            resourceSize: {resourceSize.width} x {resourceSize.height}
+          </div>
+          <div>
+            displaySize: {displaySize.width} x {displaySize.height}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };

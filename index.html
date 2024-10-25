@@ -34,12 +34,19 @@
             transform: translate(-50%, -50%);
             width: 600px;
             height: 600px;
+            overflow: visible;
         }
-        #result > svg {
+        #result svg {
             position: absolute;
+            border: 1px solid #fff;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+        }
+        #debug-info {
+            position: absolute;
+            bottom: -20px;
+            left: 10px;
         }
         #charts-container {
             background-color: #0008;

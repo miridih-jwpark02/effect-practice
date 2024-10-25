@@ -26,12 +26,12 @@ export const smoothSinglePath = (item: Paper.Item) =>
     const contextRef = yield* SVGProcessorContext;
     const context = yield* Ref.get(contextRef);
 
-    const DEBUG = context.debug;
-
     // 디버깅용 변수
+    const DEBUG = context.debug;
     let debugPaths: Paper.Path[] = [];
 
     // 작업 수행
+
     const paths = item.getItems({
       class: paper.Path,
     }) as Paper.Path[];

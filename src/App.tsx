@@ -6,13 +6,10 @@ import { ShapeRenderer } from "./ShapeRenderer";
 /**
  * 초기 SVG 문자열
  */
-const initialSvg = `<svg width="1241" height="1076" viewBox="0 0 1241 1076" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="455" y="324" width="520" height="685" fill="#5D2626"/>
-<rect y="324" width="302.206" height="685" fill="#5D2626"/>
-<rect x="938" y="324" width="302.206" height="685" fill="#5D2626"/>
-<path d="M158.671 483.329C132.701 469.313 119.954 422.224 130.2 378.154L657.926 58.9712C668.171 14.9012 697.53 -9.46211 723.5 4.55412L958.5 142.5C984.47 156.516 1137.25 98.43 1127 142.5L997.229 612.792C986.983 656.862 957.625 681.225 931.655 667.209L158.671 483.329Z" fill="#D23434"/>
-<circle cx="844" cy="926" r="150" fill="#D9D9D9"/>
-</svg>`;
+const initialSvg = `<svg width="362" height="353" viewBox="0 0 362 353" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M180.849 0L211.592 121.662L325.879 69.8426L249.927 169.733L361.698 226.778L236.246 229.677L261.335 352.63L180.849 256.355L100.364 352.63L125.453 229.677L0 226.778L111.771 169.733L35.8194 69.8426L150.106 121.662L180.849 0Z" fill="#D9D9D9"/>
+</svg>
+`;
 
 /**
  * App component

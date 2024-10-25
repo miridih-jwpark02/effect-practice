@@ -42,6 +42,7 @@ export class PaperItemManager {
       this.paper.setup([0.1, 0.1]); // temporary setup
 
       const item = this.paper.project.importSVG(svgString);
+
       this.itemCache.set(hash, item);
 
       this.paper.project.remove();
