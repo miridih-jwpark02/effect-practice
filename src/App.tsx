@@ -30,8 +30,8 @@ const App: React.FC = () => {
   const [svgInput, setSvgInput] = useState<string>(initialSvg);
   const [deltaWidth, setDeltaWidth] = useState<number>(0);
   const [deltaHeight, setDeltaHeight] = useState<number>(0);
-  const [scaleX, setScaleX] = useState<number>(50);
-  const [scaleY, setScaleY] = useState<number>(50);
+  const [scaleX, setScaleX] = useState<number>(100);
+  const [scaleY, setScaleY] = useState<number>(100);
   const [roundness, setRoundness] = useState<number>(50);
   const [style, setStyle] = useState<{
     fillColor?: string;
@@ -54,6 +54,107 @@ const App: React.FC = () => {
     setSvgInput(e.target.value);
   };
 
+  /**
+   * SVG element의 random animation을 처리
+   * @param currentValue - 현재 값
+   * @param speed - 변화 속도
+   * @param range - [최소값, 최대값] 튜플
+   * @returns {[number, number]} [새로운 값, 새로운 속도]
+   */
+  const calculateNextValue = (
+    currentValue: number,
+    speed: number,
+    range: [number, number]
+  ): [number, number] => {
+    const [minValue, maxValue] = range;
+    const nextValue = currentValue + speed;
+
+    if (nextValue > maxValue) {
+      return [maxValue, -speed];
+    }
+    if (nextValue < minValue) {
+      return [minValue, -speed];
+    }
+    return [nextValue, speed];
+  };
+
+  const handleRandomAutoAnimation = useCallback(() => {
+    const startTime = Date.now();
+    const ANIMATION_DURATION = 10000; // 10초
+
+    // Property ranges as tuples: [minValue, maxValue]
+    const ranges: [number, number][] = [
+      [50, 300], // scaleX
+      [50, 300], // scaleY
+      [0, 100], // roundness
+      [0, 300], // deltaWidth
+      [0, 300], // deltaHeight
+    ];
+
+    // Random speed 초기화
+    const speeds = Array.from(
+      { length: 5 },
+      () => Math.floor(Math.random() * 10) - 5
+    );
+
+    const animate = () => {
+      const currentTime = Date.now();
+      if (currentTime - startTime > ANIMATION_DURATION) {
+        return;
+      }
+
+      // 현재 값들을 state에서 직접 가져오지 않고 함수형 업데이트 사용
+      setScaleX((prevScaleX) => {
+        const [newValue, newSpeed] = calculateNextValue(
+          prevScaleX,
+          speeds[0],
+          ranges[0]
+        );
+        speeds[0] = newSpeed;
+        return newValue;
+      });
+      setScaleY((prevScaleY) => {
+        const [newValue, newSpeed] = calculateNextValue(
+          prevScaleY,
+          speeds[1],
+          ranges[1]
+        );
+        speeds[1] = newSpeed;
+        return newValue;
+      });
+      setRoundness((prevRoundness) => {
+        const [newValue, newSpeed] = calculateNextValue(
+          prevRoundness,
+          speeds[2],
+          ranges[2]
+        );
+        speeds[2] = newSpeed;
+        return newValue;
+      });
+      setDeltaWidth((prevDeltaWidth) => {
+        const [newValue, newSpeed] = calculateNextValue(
+          prevDeltaWidth,
+          speeds[3],
+          ranges[3]
+        );
+        speeds[3] = newSpeed;
+        return newValue;
+      });
+      setDeltaHeight((prevDeltaHeight) => {
+        const [newValue, newSpeed] = calculateNextValue(
+          prevDeltaHeight,
+          speeds[4],
+          ranges[4]
+        );
+        speeds[4] = newSpeed;
+        return newValue;
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+  }, []); // useCallback으로 함수 메모이제이션
   return (
     <div
       id="container"
@@ -115,23 +216,23 @@ const App: React.FC = () => {
           <input
             id="range-deltaWidth"
             type="range"
-            min="50"
+            min="0"
             max="300"
             value={deltaWidth}
             onChange={(e) => setDeltaWidth(Number(e.target.value))}
           />
-          <label id="label-deltaWidth">{deltaWidth}</label>
+          <label id="label-deltaWidth">{deltaWidth} px</label>
 
           <label htmlFor="range-deltaHeight">Height</label>
           <input
             id="range-deltaHeight"
             type="range"
-            min="50"
+            min="0"
             max="300"
             value={deltaHeight}
             onChange={(e) => setDeltaHeight(Number(e.target.value))}
           />
-          <label id="label-deltaHeight">{deltaHeight}</label>
+          <label id="label-deltaHeight">{deltaHeight} px</label>
 
           <label htmlFor="range-scaleX">Scale X</label>
           <input
@@ -164,7 +265,7 @@ const App: React.FC = () => {
             value={roundness}
             onChange={(e) => setRoundness(Number(e.target.value))}
           />
-          <label id="label-roundness">{roundness}</label>
+          <label id="label-roundness">{roundness}%</label>
 
           <label htmlFor="range-fillColor">Fill Color</label>
           <input
@@ -198,6 +299,14 @@ const App: React.FC = () => {
             }
           />
           <label id="label-strokeWidth">{style.strokeWidth}</label>
+          <button
+            id="button-randomAutoAnimation"
+            onClick={() => {
+              handleRandomAutoAnimation();
+            }}
+          >
+            Random Auto Animation
+          </button>
         </div>
       </div>
     </div>
