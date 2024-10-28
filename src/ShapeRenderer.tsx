@@ -35,6 +35,7 @@ const processSVG = async (
     {
       svgString,
       roundness,
+      scale,
       resourceSize: svgResourceSize,
       displaySize: svgDisplaySize,
       useCache: true,

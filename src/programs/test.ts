@@ -7,6 +7,7 @@ import { fitBoundsToDisplaySizePaperItem } from "../tasks/fitBoundsToDisplaySize
 import { exportPaperItemToSVGElement } from "../tasks/post/exportPaperItemToSVG";
 import { BehaviorSubject } from "rxjs";
 import { applyStyleToAllPath } from "../tasks/applyStyleToAllPath";
+import { scale } from "../tasks/scale";
 
 export const testProgram = Effect.gen(function* () {
   // SVG string을 Paper.js item으로 import
@@ -23,18 +24,15 @@ export const testProgram = Effect.gen(function* () {
   updatePerformanceStep("mergeToSinglePath", performance.now() - start3);
 
   const start4 = performance.now();
-  const smoothedItem = yield* smoothSinglePath(mergedItem);
-  updatePerformanceStep("smoothSinglePath", performance.now() - start4);
+  const scaledItem = yield* scale(mergedItem);
+  updatePerformanceStep("scale", performance.now() - start4);
 
   const start5 = performance.now();
-  const scaledItem = yield* fitBoundsToDisplaySizePaperItem(smoothedItem);
-  updatePerformanceStep(
-    "fitBoundsToDisplaySizePaperItem",
-    performance.now() - start5
-  );
+  const smoothedItem = yield* smoothSinglePath(scaledItem);
+  updatePerformanceStep("smoothSinglePath", performance.now() - start5);
 
   const start6 = performance.now();
-  const styledItem = yield* applyStyleToAllPath(scaledItem);
+  const styledItem = yield* applyStyleToAllPath(smoothedItem);
   updatePerformanceStep("applyStyleToAllPath", performance.now() - start6);
 
   const start7 = performance.now();

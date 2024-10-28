@@ -28,7 +28,10 @@ const extractPureSVGString = (rawString: string): string | Error => {
  */
 const App: React.FC = () => {
   const [svgInput, setSvgInput] = useState<string>(initialSvg);
-  const [scale, setScale] = useState<number>(50);
+  const [deltaWidth, setDeltaWidth] = useState<number>(0);
+  const [deltaHeight, setDeltaHeight] = useState<number>(0);
+  const [scaleX, setScaleX] = useState<number>(50);
+  const [scaleY, setScaleY] = useState<number>(50);
   const [roundness, setRoundness] = useState<number>(50);
   const [style, setStyle] = useState<{
     fillColor?: string;
@@ -68,7 +71,12 @@ const App: React.FC = () => {
             ? initialSvg
             : (extractPureSVGString(svgInput) as string)
         }
-        scale={scale}
+        deltaWidth={deltaWidth}
+        deltaHeight={deltaHeight}
+        scale={{
+          x: scaleX,
+          y: scaleY,
+        }}
         roundness={roundness}
         style={style}
         debug={debug}
@@ -103,16 +111,49 @@ const App: React.FC = () => {
           />
           <br />
 
-          <label htmlFor="range-scale">Scale</label>
+          <label htmlFor="range-deltaWidth">Width</label>
           <input
-            id="range-scale"
+            id="range-deltaWidth"
             type="range"
             min="50"
             max="300"
-            value={scale}
-            onChange={(e) => setScale(Number(e.target.value))}
+            value={deltaWidth}
+            onChange={(e) => setDeltaWidth(Number(e.target.value))}
           />
-          <label id="label-scale">{scale}</label>
+          <label id="label-deltaWidth">{deltaWidth}</label>
+
+          <label htmlFor="range-deltaHeight">Height</label>
+          <input
+            id="range-deltaHeight"
+            type="range"
+            min="50"
+            max="300"
+            value={deltaHeight}
+            onChange={(e) => setDeltaHeight(Number(e.target.value))}
+          />
+          <label id="label-deltaHeight">{deltaHeight}</label>
+
+          <label htmlFor="range-scaleX">Scale X</label>
+          <input
+            id="range-scaleX"
+            type="range"
+            min="50"
+            max="300"
+            value={scaleX}
+            onChange={(e) => setScaleX(Number(e.target.value))}
+          />
+          <label id="label-scaleX">{scaleX}%</label>
+
+          <label htmlFor="range-scaleY">Scale Y</label>
+          <input
+            id="range-scaleY"
+            type="range"
+            min="50"
+            max="300"
+            value={scaleY}
+            onChange={(e) => setScaleY(Number(e.target.value))}
+          />
+          <label id="label-scaleY">{scaleY}%</label>
 
           <label htmlFor="range-roundness">Roundness</label>
           <input
