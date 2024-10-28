@@ -4,7 +4,6 @@ import {
   SVGProcessorContext,
   SVGProcessorContextData,
 } from "./svg-engine/svgProcessor.context";
-import { Paper } from "./paper/type";
 
 /**
  * SVG processing을 담당하는 클래스
@@ -47,9 +46,7 @@ export class SvgProcessor {
 
           const initialContext = yield* _(
             Ref.make<SVGProcessorContextData>({
-              displaySize: options.displaySize,
-              resourceSize: options.resourceSize,
-              roundness: options.roundness,
+              ...options,
               paperItem,
               debug: options.debug ?? false,
             })

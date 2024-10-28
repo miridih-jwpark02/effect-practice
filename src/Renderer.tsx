@@ -10,7 +10,12 @@ const processSVG = async (
     width: number;
     height: number;
   },
-  debug?: boolean
+  debug?: boolean,
+  style?: {
+    fillColor?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+  }
 ) => {
   const svgElement = new DOMParser().parseFromString(
     svgString,
@@ -40,6 +45,7 @@ const processSVG = async (
       displaySize: svgDisplaySize,
       useCache: true,
       debug: debug ?? false,
+      style: style,
     },
     testProgram
     // shapeProgram
@@ -53,7 +59,12 @@ export const Renderer: React.FC<{
   scale: number;
   roundness: number;
   debug: boolean;
-}> = ({ svgString, scale, roundness, debug }) => {
+  style?: {
+    fillColor?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+  };
+}> = ({ svgString, scale, roundness, debug, style }) => {
   const svgRef = useRef<HTMLDivElement>(null);
   const [resourceSize, setResourceSize] = useState<{
     width: number;
@@ -65,7 +76,7 @@ export const Renderer: React.FC<{
   }>({ width: 0, height: 0 });
 
   useEffect(() => {
-    processSVG(svgString, scale, roundness, undefined, debug).then(
+    processSVG(svgString, scale, roundness, undefined, debug, style).then(
       ({ svg, resourceSize, displaySize }) => {
         if (svgRef.current) {
           svgRef.current.innerHTML = "";
@@ -75,7 +86,7 @@ export const Renderer: React.FC<{
         setDisplaySize(displaySize);
       }
     );
-  }, [svgString, scale, roundness]);
+  }, [svgString, scale, roundness, style]);
 
   return (
     <div style={{ position: "relative" }}>

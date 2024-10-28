@@ -17,6 +17,19 @@ export type SVGProcessorContextData = {
     width: number;
     height: number;
   };
+  style?: {
+    fillColor?: string;
+    fillOpacity?: number;
+    strokeColor?: string;
+    strokeWidth?: number;
+    strokeOpacity?: number;
+    strokeAlign?: "center" | "inner" | "outer";
+    strokeCap?: string;
+    strokeJoin?: string;
+    strokeMiterLimit?: number;
+    dashArray?: number[];
+    dashOffset?: number;
+  };
   /**
    * PaperItem instance
    */

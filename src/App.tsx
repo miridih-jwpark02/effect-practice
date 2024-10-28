@@ -30,6 +30,11 @@ const App: React.FC = () => {
   const [svgInput, setSvgInput] = useState<string>(initialSvg);
   const [scale, setScale] = useState<number>(50);
   const [roundness, setRoundness] = useState<number>(50);
+  const [style, setStyle] = useState<{
+    fillColor?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+  }>({});
   const [debug, setDebug] = useState<boolean>(false);
   const resultElement = useRef<HTMLDivElement>(null);
 
@@ -65,6 +70,7 @@ const App: React.FC = () => {
         }
         scale={scale}
         roundness={roundness}
+        style={style}
         debug={debug}
       />
 
@@ -118,6 +124,39 @@ const App: React.FC = () => {
             onChange={(e) => setRoundness(Number(e.target.value))}
           />
           <label id="label-roundness">{roundness}</label>
+
+          <label htmlFor="range-fillColor">Fill Color</label>
+          <input
+            id="range-fillColor"
+            type="color"
+            value={style.fillColor}
+            onChange={(e) => setStyle({ ...style, fillColor: e.target.value })}
+          />
+          <label id="label-fillColor">{style.fillColor}</label>
+
+          <label htmlFor="range-strokeColor">Stroke Color</label>
+          <input
+            id="range-strokeColor"
+            type="color"
+            value={style.strokeColor}
+            onChange={(e) =>
+              setStyle({ ...style, strokeColor: e.target.value })
+            }
+          />
+          <label id="label-strokeColor">{style.strokeColor}</label>
+
+          <label htmlFor="range-strokeWidth">Stroke Width</label>
+          <input
+            id="range-strokeWidth"
+            type="range"
+            min="0"
+            max="100"
+            value={style.strokeWidth}
+            onChange={(e) =>
+              setStyle({ ...style, strokeWidth: Number(e.target.value) })
+            }
+          />
+          <label id="label-strokeWidth">{style.strokeWidth}</label>
         </div>
       </div>
     </div>

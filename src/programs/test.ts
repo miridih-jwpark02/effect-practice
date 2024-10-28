@@ -6,6 +6,7 @@ import { smoothSinglePath } from "../tasks/smoothSinglePath";
 import { fitBoundsToDisplaySizePaperItem } from "../tasks/fitBoundsToDisplaySizePaperItem";
 import { exportPaperItemToSVGElement } from "../tasks/post/exportPaperItemToSVG";
 import { BehaviorSubject } from "rxjs";
+import { applyStyleToAllPath } from "../tasks/applyStyleToAllPath";
 
 export const testProgram = Effect.gen(function* () {
   // SVG string을 Paper.js item으로 import
@@ -33,10 +34,14 @@ export const testProgram = Effect.gen(function* () {
   );
 
   const start6 = performance.now();
-  const svg = yield* exportPaperItemToSVGElement(scaledItem);
+  const styledItem = yield* applyStyleToAllPath(scaledItem);
+  updatePerformanceStep("applyStyleToAllPath", performance.now() - start6);
+
+  const start7 = performance.now();
+  const svg = yield* exportPaperItemToSVGElement(styledItem);
   updatePerformanceStep(
     "exportPaperItemToSVGElement",
-    performance.now() - start6
+    performance.now() - start7
   );
 
   return svg;
