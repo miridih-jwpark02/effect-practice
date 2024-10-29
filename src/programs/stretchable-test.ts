@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { importSVGToPaperItem } from "../tasks/pre/importSVGToPaperItem";
 import { expandAllShapeToPath } from "../tasks/expandAllShapeToPath";
 import { mergeToSinglePath } from "../tasks/mergeToSinglePath";
-import { smoothSinglePath } from "../tasks/smoothSinglePath";
+import { smoothPaths } from "../tasks/smoothPaths";
 import { fitBoundsToDisplaySizePaperItem } from "../tasks/fitBoundsToDisplaySizePaperItem";
 import { exportPaperItemToSVGElement } from "../tasks/post/exportPaperItemToSVG";
 import { BehaviorSubject } from "rxjs";
@@ -10,7 +10,7 @@ import { applyStyleToAllPath } from "../tasks/applyStyleToAllPath";
 import { scale } from "../tasks/scale";
 import { reposition } from "../tasks/reposition";
 
-export const testProgram = Effect.gen(function* () {
+export const stretchableTestProgram = Effect.gen(function* () {
   // SVG string을 Paper.js item으로 import
   const start = performance.now();
   const importedItem = yield* importSVGToPaperItem;
@@ -20,17 +20,21 @@ export const testProgram = Effect.gen(function* () {
   const expandedItem = yield* expandAllShapeToPath(importedItem);
   updatePerformanceStep("expandAllShapeToPath", performance.now() - start2);
 
+  const start21 = performance.now();
+  const repositionedItem = yield* reposition(expandedItem);
+  updatePerformanceStep("reposition", performance.now() - start21);
+
   const start3 = performance.now();
-  const mergedItem = yield* mergeToSinglePath(expandedItem);
+  const mergedItem = yield* mergeToSinglePath(repositionedItem);
   updatePerformanceStep("mergeToSinglePath", performance.now() - start3);
 
-  const start4 = performance.now();
-  const scaledItem = yield* scale(mergedItem);
-  updatePerformanceStep("scale", performance.now() - start4);
+  // const start4 = performance.now();
+  // const scaledItem = yield* scale(mergedItem);
+  // updatePerformanceStep("scale", performance.now() - start4);
 
   const start5 = performance.now();
-  const smoothedItem = yield* smoothSinglePath(scaledItem);
-  updatePerformanceStep("smoothSinglePath", performance.now() - start5);
+  const smoothedItem = yield* smoothPaths(mergedItem);
+  updatePerformanceStep("smoothPaths", performance.now() - start5);
 
   const start6 = performance.now();
   const styledItem = yield* applyStyleToAllPath(smoothedItem);

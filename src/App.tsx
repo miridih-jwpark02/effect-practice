@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { performanceSubject } from "./programs/test";
+import { performanceSubject as stretchablePerformanceSubject } from "./programs/stretchable-test";
+import {
+  performanceSubject,
+  performanceSubject as rendererPerformanceSubject,
+} from "./programs/test";
 import { updateCandleChart, updatePieChart } from "./chart";
+// import { Renderer } from "./Renderer";
+// import { ShapeRenderer } from "./ShapeRenderer";
+import { mockSVGString, mockSVGString2 } from "./mock";
+import { StretchableRenderer } from "./StretchableRenderer";
 import { Renderer } from "./Renderer";
-import { ShapeRenderer } from "./ShapeRenderer";
-/**
- * 초기 SVG 문자열
- */
-const initialSvg = `<svg width="362" height="353" viewBox="0 0 362 353" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M180.849 0L211.592 121.662L325.879 69.8426L249.927 169.733L361.698 226.778L236.246 229.677L261.335 352.63L180.849 256.355L100.364 352.63L125.453 229.677L0 226.778L111.771 169.733L35.8194 69.8426L150.106 121.662L180.849 0Z" fill="#D9D9D9"/>
-</svg>
-`;
 
 /**
  * SVG string에서 <svg> 태그와 그 내용을 추출
@@ -27,7 +27,7 @@ const extractPureSVGString = (rawString: string): string | Error => {
  * @returns {JSX.Element} App component
  */
 const App: React.FC = () => {
-  const [svgInput, setSvgInput] = useState<string>(initialSvg);
+  const [svgInput, setSvgInput] = useState<string>(mockSVGString2);
   const [deltaWidth, setDeltaWidth] = useState<number>(0);
   const [deltaHeight, setDeltaHeight] = useState<number>(0);
   const [scaleX, setScaleX] = useState<number>(100);
@@ -39,16 +39,21 @@ const App: React.FC = () => {
     strokeWidth?: number;
   }>({});
   const [debug, setDebug] = useState<boolean>(false);
+  const [mode, setMode] = useState<"stretchable" | "renderer">("renderer");
   const resultElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const subscription = performanceSubject.subscribe((performanceResult) => {
+    const subscription = (
+      mode === "stretchable"
+        ? stretchablePerformanceSubject
+        : rendererPerformanceSubject
+    ).subscribe((performanceResult) => {
       updateCandleChart(performanceResult);
       updatePieChart(performanceResult);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [mode]);
 
   const handleSvgInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setSvgInput(e.target.value);
@@ -166,35 +171,65 @@ const App: React.FC = () => {
         height: "100vh",
       }}
     >
-      <Renderer
-        svgString={
-          extractPureSVGString(svgInput) instanceof Error
-            ? initialSvg
-            : (extractPureSVGString(svgInput) as string)
-        }
-        deltaWidth={deltaWidth}
-        deltaHeight={deltaHeight}
-        scale={{
-          x: scaleX,
-          y: scaleY,
-        }}
-        roundness={roundness}
-        style={style}
-        debug={debug}
-      />
-
-      {/* <ShapeRenderer svgString={svgInput} scale={scale} roundness={roundness} /> */}
+      {mode === "renderer" && (
+        <Renderer
+          svgString={
+            extractPureSVGString(svgInput) instanceof Error
+              ? mockSVGString
+              : (extractPureSVGString(svgInput) as string)
+          }
+          deltaWidth={deltaWidth}
+          deltaHeight={deltaHeight}
+          scale={{
+            x: scaleX,
+            y: scaleY,
+          }}
+          roundness={roundness}
+          style={style}
+          debug={debug}
+        />
+      )}
+      {mode === "stretchable" && (
+        <StretchableRenderer
+          svgString={
+            extractPureSVGString(svgInput) instanceof Error
+              ? mockSVGString
+              : (extractPureSVGString(svgInput) as string)
+          }
+          deltaWidth={deltaWidth}
+          deltaHeight={deltaHeight}
+          scale={{
+            x: scaleX,
+            y: scaleY,
+          }}
+          roundness={roundness}
+          style={style}
+          debug={debug}
+        />
+      )}
 
       <div id="charts-container">
         <div id="candleChart"></div>
         <div id="pieChart"></div>
       </div>
+
       <div id="controls-container">
         <div
           id="controls"
           className="controls-grid"
           style={{ padding: "10px", boxSizing: "border-box" }}
         >
+          <select
+            id="mode"
+            value={mode}
+            onChange={(e) => {
+              setMode(e.target.value as "stretchable" | "renderer");
+              setSvgInput(mode === "renderer" ? mockSVGString : mockSVGString2);
+            }}
+          >
+            <option value="stretchable">Stretchable</option>
+            <option value="renderer">Renderer</option>
+          </select>
           <textarea
             id="svg-input"
             placeholder="SVG 코드를 여기에 붙여넣으세요"
@@ -212,7 +247,7 @@ const App: React.FC = () => {
           />
           <br />
 
-          <label htmlFor="range-deltaWidth">Width</label>
+          <label htmlFor="range-deltaWidth">ΔWidth</label>
           <input
             id="range-deltaWidth"
             type="range"
@@ -223,7 +258,7 @@ const App: React.FC = () => {
           />
           <label id="label-deltaWidth">{deltaWidth} px</label>
 
-          <label htmlFor="range-deltaHeight">Height</label>
+          <label htmlFor="range-deltaHeight">ΔHeight</label>
           <input
             id="range-deltaHeight"
             type="range"

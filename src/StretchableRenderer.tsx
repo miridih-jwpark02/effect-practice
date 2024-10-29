@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { SvgProcessor } from "./svg-processor";
 import { testProgram } from "./programs/test";
+import { mockLayerData } from "./mock";
+import { stretchableTestProgram } from "./programs/stretchable-test";
 
 const processSVG = async (
   svgString: string,
@@ -52,15 +54,17 @@ const processSVG = async (
       useCache: true,
       debug: debug ?? false,
       style: style,
+      layerData: mockLayerData,
     },
-    testProgram
+    // testProgram
     // shapeProgram
+    stretchableTestProgram
   );
 
   return { svg, resourceSize: svgResourceSize, displaySize: svgDisplaySize };
 };
 
-export const Renderer: React.FC<{
+export const StretchableRenderer: React.FC<{
   svgString: string;
   scale: {
     x: number;

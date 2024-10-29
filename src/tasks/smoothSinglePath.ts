@@ -32,13 +32,18 @@ export const smoothSinglePath = (item: Paper.Item) =>
 
     // 디버깅용 변수
     const DEBUG = context.debug;
-    let debugPaths: Paper.Path[] = [];
+    const debugPaths: Paper.Path[] = [];
 
     // 작업 수행
 
-    const paths = item.getItems({
-      class: paper.Path,
-    }) as Paper.Path[];
+    const paths =
+      item instanceof paper.Path
+        ? [item]
+        : (item.getItems({
+            class: paper.Path,
+          }) as Paper.Path[]);
+
+    console.log("[smoothSinglePath] paths", paths);
 
     // path 개수 검증: 하나만 있어야 함.
     yield* isSinglePath(paths);
@@ -105,6 +110,8 @@ export const smoothSinglePath = (item: Paper.Item) =>
 
     // 실제로 변화시킬 길이
     const referenceLength = (minLength * context.roundness) / 100;
+
+    console.log("referenceLength", referenceLength);
 
     const flatCurves: Paper.Curve[] = [];
 
@@ -324,17 +331,16 @@ export const smoothSinglePath = (item: Paper.Item) =>
       item.addChildren([debugResultPath]);
     }
 
-    // 디버깅용 변수 초기화
-    debugPaths = [];
-
     // 원본 path 제거
     path.remove();
 
     // 결과 path 추가
-    if (!DEBUG) {
+    if (!DEBUG && item instanceof paper.Group) {
       item.addChildren([resultPath]);
     }
 
+    yield* Effect.succeed(resultArcs.length > 0);
+
     // 반환
-    return item;
+    return item instanceof paper.Group ? item : resultPath;
   });

@@ -11,12 +11,8 @@ export const exportPaperItemToSVGElement = (item: Paper.Item) =>
     const contextRef = yield* SVGProcessorContext;
     const context = yield* Ref.get(contextRef);
 
-    paper.project.clear();
     // 작업 수행
-    const currentLayer = paper.project.activeLayer;
-    currentLayer.addChild(item);
-
-    const exportedSVG = paper.project.exportSVG({
+    const exportedSVG = item.exportSVG({
       bounds: new paper.Rectangle(
         new paper.Point(0, 0),
         new paper.Size(context.displaySize.width, context.displaySize.height)

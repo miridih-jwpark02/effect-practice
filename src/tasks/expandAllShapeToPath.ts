@@ -1,31 +1,34 @@
-import { Effect } from "effect";
-import { PaperEngine } from "../svg-engine/paper-engine";
-import type { Paper } from "../paper/type";
+import { Effect } from 'effect';
+import type { Paper } from '../paper/type';
+import { PaperEngine } from '../svg-engine/paper-engine';
 
 export const expandAllShapeToPath = (item: Paper.Item) =>
   Effect.gen(function* () {
     // 의존성 로드
     const { paper } = yield* PaperEngine;
 
-    // item 내부의 모든 Shape를 Path로 변환
-    const targetShapes = item.getItems({
-      recursive: true,
-      class: paper.Shape,
-    }) as Paper.Shape[];
+    const newChildren: Paper.Item[] = [];
 
-    const convertedPaths: Paper.Path[] = targetShapes.map(
-      (shape) => shape.toPath(false) // no insert to active layer
-    );
+    const convertToPath = (child: Paper.Item) => {
+      if (child instanceof paper.Shape) {
+        return child.toPath(false);
+      }
+      if (child instanceof paper.Group) {
+        child.children.forEach((child) => {
+          newChildren.push(convertToPath(child));
+        });
+      }
+      return child;
+    };
+
+    item.children.forEach((child) => {
+      newChildren.push(convertToPath(child));
+    });
 
     // 비어있는 패스는 제외
-    const filteredConvertedPaths = convertedPaths.filter(
-      (shape) => shape.fillColor !== null
-    );
+    const filteredConvertedPaths = newChildren.filter((shape) => shape.fillColor !== null);
 
-    // 기존 Shapes 제거
-    targetShapes.forEach((shape) => {
-      shape.remove();
-    });
+    item.removeChildren();
 
     // 변환된 패스 추가
     item.addChildren(filteredConvertedPaths);

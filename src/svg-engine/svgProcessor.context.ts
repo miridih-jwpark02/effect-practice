@@ -32,15 +32,17 @@ type LayerStrain = {
   };
 };
 
-type LayerItem = {
+export type LayerItem = {
   /**
    * 레이어 id
    */
   id: string;
   /**
-   * 레이어 리소스 크기
+   * 레이어 bound
    */
-  resourceSize: {
+  bounds: {
+    x: number;
+    y: number;
     width: number;
     height: number;
   };
