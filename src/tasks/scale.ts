@@ -14,8 +14,8 @@ export const scale = (item: Paper.Item) =>
 
     // 스케일 로드
     const scale = context.scale;
-    const xScale = typeof scale === "number" ? scale / 100 : scale.x / 100;
-    const yScale = typeof scale === "number" ? scale / 100 : scale.y / 100;
+    const xScale = typeof scale === "number" ? scale : scale.x;
+    const yScale = typeof scale === "number" ? scale : scale.y;
 
     // scale의 기준점을 아이템의 왼쪽 위로 설정
     item.pivot = item.bounds.topLeft;

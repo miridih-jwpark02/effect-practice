@@ -30,9 +30,9 @@ const App: React.FC = () => {
   const [svgInput, setSvgInput] = useState<string>(mockSVGString2);
   const [deltaWidth, setDeltaWidth] = useState<number>(0);
   const [deltaHeight, setDeltaHeight] = useState<number>(0);
-  const [scaleX, setScaleX] = useState<number>(100);
-  const [scaleY, setScaleY] = useState<number>(100);
-  const [roundness, setRoundness] = useState<number>(50);
+  const [scaleX, setScaleX] = useState<number>(1);
+  const [scaleY, setScaleY] = useState<number>(1);
+  const [roundness, setRoundness] = useState<number>(0.5);
   const [style, setStyle] = useState<{
     fillColor?: string;
     strokeColor?: string;
@@ -252,7 +252,7 @@ const App: React.FC = () => {
             id="range-deltaWidth"
             type="range"
             min="0"
-            max="300"
+            max="100"
             value={deltaWidth}
             onChange={(e) => setDeltaWidth(Number(e.target.value))}
           />
@@ -273,34 +273,36 @@ const App: React.FC = () => {
           <input
             id="range-scaleX"
             type="range"
-            min="50"
-            max="300"
+            min="0.5"
+            max="3"
+            step="0.01"
             value={scaleX}
             onChange={(e) => setScaleX(Number(e.target.value))}
           />
-          <label id="label-scaleX">{scaleX}%</label>
+          <label id="label-scaleX">{scaleX * 100}%</label>
 
           <label htmlFor="range-scaleY">Scale Y</label>
           <input
             id="range-scaleY"
             type="range"
-            min="50"
-            max="300"
+            min="0.5"
+            max="3"
+            step="0.01"
             value={scaleY}
             onChange={(e) => setScaleY(Number(e.target.value))}
           />
-          <label id="label-scaleY">{scaleY}%</label>
+          <label id="label-scaleY">{scaleY * 100}%</label>
 
           <label htmlFor="range-roundness">Roundness</label>
           <input
             id="range-roundness"
             type="range"
             min="0"
-            max="100"
+            max="1"
             value={roundness}
             onChange={(e) => setRoundness(Number(e.target.value))}
           />
-          <label id="label-roundness">{roundness}%</label>
+          <label id="label-roundness">{roundness * 100}%</label>
 
           <label htmlFor="range-fillColor">Fill Color</label>
           <input

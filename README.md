@@ -220,8 +220,8 @@ const processSVG = async (
   };
 
   const svgDisplaySize = displaySize ?? {
-    width: (svgResourceSize.width * scale) / 100,
-    height: (svgResourceSize.height * scale) / 100,
+    width: (svgResourceSize.width * scale),
+    height: (svgResourceSize.height * scale),
   };
 
   const svgProcessor = new SvgProcessor();

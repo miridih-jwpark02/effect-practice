@@ -109,7 +109,7 @@ export const smoothSinglePath = (item: Paper.Item) =>
     );
 
     // 실제로 변화시킬 길이
-    const referenceLength = (minLength * context.roundness) / 100;
+    const referenceLength = minLength * context.roundness;
 
     console.log("referenceLength", referenceLength);
 

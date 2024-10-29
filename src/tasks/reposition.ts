@@ -18,8 +18,8 @@ export const reposition = (item: Paper.Item) =>
     const layerData = context.layerData;
 
     const scale = context.scale;
-    const xScale = typeof scale === "number" ? scale / 100 : scale.x / 100;
-    const yScale = typeof scale === "number" ? scale / 100 : scale.y / 100;
+    const xScale = typeof scale === "number" ? scale : scale.x;
+    const yScale = typeof scale === "number" ? scale : scale.y;
 
     const deltaWidth =
       context.displaySize.width - context.resourceSize.width * xScale;
