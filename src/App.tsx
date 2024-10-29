@@ -89,11 +89,11 @@ const App: React.FC = () => {
 
     // Property ranges as tuples: [minValue, maxValue]
     const ranges: [number, number][] = [
-      [50, 300], // scaleX
-      [50, 300], // scaleY
-      [0, 100], // roundness
-      [0, 300], // deltaWidth
-      [0, 300], // deltaHeight
+      [0.5, 3], // scaleX
+      [0.5, 3], // scaleY
+      [0, 1], // roundness
+      [0, 100], // deltaWidth
+      [0, 100], // deltaHeight
     ];
 
     // Random speed 초기화
